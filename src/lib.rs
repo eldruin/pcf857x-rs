@@ -19,6 +19,67 @@
 //! Datasheets:
 //! - [PCF8574 / PCF8574A](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
 //! - [PCF8575](https://www.nxp.com/documents/data_sheet/PCF8575.pdf)
+//!
+//! ## Usage examples (see also examples folder)
+//!
+//! ### Instantiating with the default address
+//!
+//! Import this crate and an `embedded_hal` implementation, then instantiate
+//! the device:
+//!
+//! ```no_run
+//! extern crate linux_embedded_hal as hal;
+//! extern crate pcf857x;
+//!
+//! use hal::{I2cdev};
+//! use pcf857x::{PCF8574, SlaveAddr};
+//!
+//! # fn main() {
+//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
+//! let address = SlaveAddr::default();
+//! let mut expander = PCF8574::new(dev, address);
+//! # }
+//! ```
+//!
+//! ### Providing an alternative address
+//!
+//! ```no_run
+//! extern crate linux_embedded_hal as hal;
+//! extern crate pcf857x;
+//!
+//! use hal::{I2cdev};
+//! use pcf857x::{PCF8574, SlaveAddr};
+//!
+//! # fn main() {
+//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
+//! let (a2, a1, a0) = (false, false, true);
+//! let address = SlaveAddr::Alternative(a2, a1, a0);
+//! let mut expander = PCF8574::new(dev, address);
+//! # }
+//! ```
+//!
+//! ### Setting the output pins and reading P0 and P7
+//!
+//! ```no_run
+//! extern crate linux_embedded_hal as hal;
+//! extern crate pcf857x;
+//!
+//! use hal::{I2cdev};
+//! use pcf857x::{PCF8574, SlaveAddr, PinFlags};
+//!
+//! # fn main() {
+//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
+//! let address = SlaveAddr::default();
+//! let mut expander = PCF8574::new(dev, address);
+//! let output_pin_status = 0b1010_1010;
+//! expander.set(output_pin_status).unwrap();
+//!
+//! let mask_of_pins_to_be_read = PinFlags::P0 | PinFlags::P7;
+//! let read_input_pin_status = expander.get(mask_of_pins_to_be_read).unwrap();
+//!
+//! println!("Input pin status: {}", read_input_pin_status);
+//! # }
+//! ```
 
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
