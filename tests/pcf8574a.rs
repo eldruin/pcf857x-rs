@@ -32,3 +32,14 @@ fn can_read_pins() {
     assert_eq!(0x01, status);
 }
 
+#[test]
+fn read_conserves_output_high_pins() {
+    let mut expander = setup(&[0x01]);
+    let write_status = 0b0101_1010;
+    expander.set(write_status).unwrap();
+    let mask = PinFlags::P0 | PinFlags::P7;
+    let read_status = expander.get(mask).unwrap();
+    check_sent_data(expander, &[mask | write_status]);
+    assert_eq!(0x01, read_status);
+}
+

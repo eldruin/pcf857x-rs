@@ -98,6 +98,8 @@ pub struct PCF8574<I2C> {
     i2c: I2C,
     /// The I²C device address.
     address: u8,
+    /// Last status set to output pins, used to conserve its status while doing a read.
+    last_set_mask: u8,
 }
 
 impl<I2C, E> PCF8574<I2C>
@@ -109,7 +111,8 @@ where
         let default_address = 0b010_0000;
         PCF8574 {
             i2c,
-            address: address.addr(default_address)
+            address: address.addr(default_address),
+            last_set_mask: 0
         }
     }
 
@@ -122,7 +125,9 @@ where
     pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
         self.i2c
             .write(self.address, &[bits])
-            .map_err(Error::I2C)
+            .map_err(Error::I2C)?;
+        self.last_set_mask = bits;
+        Ok(())
     }
 }
 
@@ -134,7 +139,7 @@ where
     /// The mask of the pins to be read can be created with a combination of
     /// `PinFlags::P0` to `PinFlags::P7`.
     pub fn get(&mut self, mask: u8) -> Result<u8, Error<E>> {
-        read_pins(&mut self.i2c, self.address, mask)
+        read_pins(&mut self.i2c, self.address, mask | self.last_set_mask)
     }
 }
 
@@ -145,6 +150,8 @@ pub struct PCF8574A<I2C> {
     i2c: I2C,
     /// The I²C device address.
     address: u8,
+    /// Last status set to output pins, used to conserve its status while doing a read.
+    last_set_mask: u8,
 }
 
 impl<I2C, E> PCF8574A<I2C>
@@ -156,7 +163,8 @@ where
         let default_address = 0b011_1000;
         PCF8574A {
             i2c,
-            address: address.addr(default_address)
+            address: address.addr(default_address),
+            last_set_mask: 0
         }
     }
 
@@ -169,7 +177,9 @@ where
     pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
         self.i2c
             .write(self.address, &[bits])
-            .map_err(Error::I2C)
+            .map_err(Error::I2C)?;
+        self.last_set_mask = bits;
+        Ok(())
     }
 }
 
@@ -181,7 +191,7 @@ where
     /// The mask of the pins to be read can be created with a combination of
     /// `PinFlags::P0` to `PinFlags::P7`.
     pub fn get(&mut self, mask: u8) -> Result<u8, Error<E>> {
-        read_pins(&mut self.i2c, self.address, mask)
+        read_pins(&mut self.i2c, self.address, mask | self.last_set_mask)
     }
 }
 
