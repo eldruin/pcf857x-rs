@@ -177,6 +177,74 @@ pcf8574!(PCF8574,  0b010_0000);
 pcf8574!(PCF8574A, 0b011_1000);
 
 
+/// PCF8575 device driver
+#[derive(Debug, Default)]
+pub struct PCF8575<I2C> {
+    /// The concrete I²C device implementation.
+    i2c: I2C,
+    /// The I²C device address.
+    address: u8,
+    /// Last status set to output pins, used to conserve its status while doing a read.
+    last_set_mask: u16,
+}
+
+impl<I2C, E> PCF8575<I2C>
+where
+    I2C: Write<Error = E>
+{
+    /// Create new instance of the PCF8575 device
+    pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
+        PCF8575 {
+            i2c,
+            address: address.addr(0b010_0000),
+            last_set_mask: 0
+        }
+    }
+
+    /// Destroy driver instance, return I²C bus instance.
+    pub fn destroy(self) -> I2C {
+        self.i2c
+    }
+
+    /// Set the status of all I/O pins.
+    pub fn set(&mut self, bits: u16) -> Result<(), Error<E>> {
+        self.i2c
+            .write(self.address, &u16_to_u8_array(bits)[..])
+            .map_err(Error::I2C)?;
+        self.last_set_mask = bits;
+        Ok(())
+    }
+}
+
+impl<I2C, E> PCF8575<I2C>
+where
+    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
+{
+    /// Get the status of the selected I/O pins.
+    /// The mask of the pins to be read can be created with a combination of
+    /// `PinFlags::P0` to `PinFlags::P17`.
+    pub fn get(&mut self, mask: u16) -> Result<u16, Error<E>> {
+        let mask = mask | self.last_set_mask;
+        // configure selected pins as inputs
+        self.i2c
+            .write(self.address, &u16_to_u8_array(mask)[..])
+            .map_err(Error::I2C)?;
+
+        let mut bits = [0; 2];
+        self.i2c
+            .read(self.address, &mut bits)
+            .map_err(Error::I2C).and(Ok(u8_array_to_u16(bits)))
+    }
+}
+
+fn u16_to_u8_array(input: u16) -> [u8; 2] {
+    [input as u8, (input >> 8) as u8]
+}
+
+fn u8_array_to_u16(input: [u8; 2]) -> u16 {
+    input[0] as u16 | ((input[1] as u16) << 8)
+}
+
 #[cfg(test)]
 mod tests {
     extern crate embedded_hal_mock as hal;
@@ -197,6 +265,16 @@ mod tests {
         assert_eq!(0b010_0010, SlaveAddr::Alternative(false,  true, false).addr(default));
         assert_eq!(0b010_0100, SlaveAddr::Alternative( true, false, false).addr(default));
         assert_eq!(0b010_0111, SlaveAddr::Alternative( true,  true,  true).addr(default));
+    }
+
+    #[test]
+    fn can_convert_u16_to_u8_array() {
+        assert_eq!([0xCD, 0xAB], u16_to_u8_array(0xABCD));
+    }
+
+    #[test]
+    fn can_convert_u8_array_to_u16() {
+        assert_eq!(0xABCD, u8_array_to_u16([0xCD, 0xAB]));
     }
 }
 

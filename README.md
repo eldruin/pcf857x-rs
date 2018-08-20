@@ -21,11 +21,6 @@ Datasheets:
 - [PCF8574 / PCF8574A](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
 - [PCF8575](https://www.nxp.com/documents/data_sheet/PCF8575.pdf)
 
-## Status
-- [x] Support for PCF8574
-- [x] Support for PCF8574A
-- [ ] Support for PCF8575
-
 ## License
 
 Licensed under either of
