@@ -108,124 +108,74 @@ impl SlaveAddr {
     }
 }
 
-
-/// PCF8574 driver
-#[derive(Debug, Default)]
-pub struct PCF8574<I2C> {
-    /// The concrete I²C device implementation.
-    i2c: I2C,
-    /// The I²C device address.
-    address: u8,
-    /// Last status set to output pins, used to conserve its status while doing a read.
-    last_set_mask: u8,
-}
-
-impl<I2C, E> PCF8574<I2C>
-where
-    I2C: Write<Error = E>
-{
-    /// Create new instance of a PCF8574 device
-    pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
-        let default_address = 0b010_0000;
-        PCF8574 {
-            i2c,
-            address: address.addr(default_address),
-            last_set_mask: 0
+macro_rules! pcf8574 {
+    ( $device_name:ident, $default_address:expr ) => {
+        /// Device driver
+        #[derive(Debug, Default)]
+        pub struct $device_name<I2C> {
+            /// The concrete I²C device implementation.
+            i2c: I2C,
+            /// The I²C device address.
+            address: u8,
+            /// Last status set to output pins, used to conserve its status while doing a read.
+            last_set_mask: u8,
         }
-    }
 
-    /// Destroy driver instance, return I²C bus instance.
-    pub fn destroy(self) -> I2C {
-        self.i2c
-    }
+        impl<I2C, E> $device_name<I2C>
+        where
+            I2C: Write<Error = E>
+        {
+            /// Create new instance of the device
+            pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
+                $device_name {
+                    i2c,
+                    address: address.addr($default_address),
+                    last_set_mask: 0
+                }
+            }
 
-    /// Set the status of all I/O pins.
-    pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
-        self.i2c
-            .write(self.address, &[bits])
-            .map_err(Error::I2C)?;
-        self.last_set_mask = bits;
-        Ok(())
-    }
-}
+            /// Destroy driver instance, return I²C bus instance.
+            pub fn destroy(self) -> I2C {
+                self.i2c
+            }
 
-impl<I2C, E> PCF8574<I2C>
-where
-    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
-{
-    /// Get the status of the selected I/O pins.
-    /// The mask of the pins to be read can be created with a combination of
-    /// `PinFlags::P0` to `PinFlags::P7`.
-    pub fn get(&mut self, mask: u8) -> Result<u8, Error<E>> {
-        read_pins(&mut self.i2c, self.address, mask | self.last_set_mask)
-    }
-}
-
-/// PCF8574A driver
-#[derive(Debug, Default)]
-pub struct PCF8574A<I2C> {
-    /// The concrete I²C device implementation.
-    i2c: I2C,
-    /// The I²C device address.
-    address: u8,
-    /// Last status set to output pins, used to conserve its status while doing a read.
-    last_set_mask: u8,
-}
-
-impl<I2C, E> PCF8574A<I2C>
-where
-    I2C: Write<Error = E>
-{
-    /// Create new instance of a PCF8574 device
-    pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
-        let default_address = 0b011_1000;
-        PCF8574A {
-            i2c,
-            address: address.addr(default_address),
-            last_set_mask: 0
+            /// Set the status of all I/O pins.
+            pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
+                self.i2c
+                    .write(self.address, &[bits])
+                    .map_err(Error::I2C)?;
+                self.last_set_mask = bits;
+                Ok(())
+            }
         }
-    }
 
-    /// Destroy driver instance, return I²C bus instance.
-    pub fn destroy(self) -> I2C {
-        self.i2c
-    }
+        impl<I2C, E> $device_name<I2C>
+        where
+            I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
+        {
+            /// Get the status of the selected I/O pins.
+            /// The mask of the pins to be read can be created with a combination of
+            /// `PinFlags::P0` to `PinFlags::P7`.
+            pub fn get(&mut self, mask: u8) -> Result<u8, Error<E>> {
+                let mask = mask | self.last_set_mask;
+                // configure selected pins as inputs
+                self.i2c
+                    .write(self.address, &[mask])
+                    .map_err(Error::I2C)?;
 
-    /// Set the status of all I/O pins.
-    pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
-        self.i2c
-            .write(self.address, &[bits])
-            .map_err(Error::I2C)?;
-        self.last_set_mask = bits;
-        Ok(())
-    }
+                let mut bits = [0];
+                self.i2c
+                    .read(self.address, &mut bits)
+                    .map_err(Error::I2C).and(Ok(bits[0]))
+            }
+        }
+
+    };
 }
 
-impl<I2C, E> PCF8574A<I2C>
-where
-    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
-{
-    /// Get the status of the selected I/O pins.
-    /// The mask of the pins to be read can be created with a combination of
-    /// `PinFlags::P0` to `PinFlags::P7`.
-    pub fn get(&mut self, mask: u8) -> Result<u8, Error<E>> {
-        read_pins(&mut self.i2c, self.address, mask | self.last_set_mask)
-    }
-}
+pcf8574!(PCF8574,  0b010_0000);
+pcf8574!(PCF8574A, 0b011_1000);
 
-
-fn read_pins<I2C, E>(i2c: &mut I2C, address: u8, mask: u8) -> Result<u8, Error<E>>
-where
-    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
-{
-    // configure selected pins as inputs
-    i2c.write(address, &[mask])
-        .map_err(Error::I2C)?;
-
-    let mut bits = [0];
-    i2c.read(address, &mut bits)
-       .map_err(Error::I2C).and(Ok(bits[0]))
-}
 
 #[cfg(test)]
 mod tests {
