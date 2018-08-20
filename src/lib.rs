@@ -1,6 +1,24 @@
 //! This is a platform agnostic Rust driver for the PCF8574, PCF8574A and PCF8575
 //! I/O expanders, based on the [`embedded-hal`] traits.
 //! [`embedded-hal`]: https://github.com/japaric/embedded-hal
+//!
+//! This driver allows you to:
+//! - Set all the outputs to 0 or 1 at once
+//! - Read selected inputs
+//!
+//! ## The devices
+//! The devices consist of 8 or 16 quasi-bidirectional ports, I²C-bus interface, three
+//! hardware address inputs and interrupt output. The quasi-bidirectional port can be
+//! independently assigned as an input to monitor interrupt status or keypads, or as an
+//! output to activate indicator devices such as LEDs.
+//!
+//! The active LOW open-drain interrupt output (INT) can be connected to the interrupt logic
+//! of the microcontroller and is activated when any input state differs from its corresponding 
+//! input port register state.
+//!
+//! Datasheets:
+//! - [PCF8574 / PCF8574A](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
+//! - [PCF8575](https://www.nxp.com/documents/data_sheet/PCF8575.pdf)
 
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
