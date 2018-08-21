@@ -65,7 +65,7 @@
 //! extern crate pcf857x;
 //!
 //! use hal::{I2cdev};
-//! use pcf857x::{PCF8574, SlaveAddr, PinFlags};
+//! use pcf857x::{PCF8574, SlaveAddr, PinFlag};
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
@@ -74,8 +74,8 @@
 //! let output_pin_status = 0b1010_1010;
 //! expander.set(output_pin_status).unwrap();
 //!
-//! let mask_of_pins_to_be_read = PinFlags::P0 | PinFlags::P7;
-//! let read_input_pin_status = expander.get(mask_of_pins_to_be_read).unwrap();
+//! let mask_of_pins_to_be_read = PinFlag::P0 | PinFlag::P7;
+//! let read_input_pin_status = expander.get(&mask_of_pins_to_be_read).unwrap();
 //!
 //! println!("Input pin status: {}", read_input_pin_status);
 //! # }
@@ -93,53 +93,66 @@ use hal::blocking::i2c::Write;
 pub enum Error<E> {
     /// I²C bus error
     I2C(E),
+    /// Invalid input data
+    InvalidInputData
 }
 
 /// I/O pin flags, used to select which pins to read in the `get` functions.
 /// It is possible to select multiple of them using the _or_ operator.
 /// ```
-/// # use pcf857x::PinFlags;
-/// let pins_to_be_read = PinFlags::P0 | PinFlags::P1;
+/// # use pcf857x::PinFlag;
+/// let pins_to_be_read = PinFlag::P0 | PinFlag::P1;
 /// ```
 /// Note that P10-17 can only be used with PCF8575 devices.
-pub struct PinFlags;
-
-impl PinFlags {
-    /// Pin 0
-    pub const P0 :  u8 = 0b0000_0001;
-    /// Pin 1
-    pub const P1 :  u8 = 0b0000_0010;
-    /// Pin 2
-    pub const P2 :  u8 = 0b0000_0100;
-    /// Pin 3
-    pub const P3 :  u8 = 0b0000_1000;
-    /// Pin 4
-    pub const P4 :  u8 = 0b0001_0000;
-    /// Pin 5
-    pub const P5 :  u8 = 0b0010_0000;
-    /// Pin 6
-    pub const P6 :  u8 = 0b0100_0000;
-    /// Pin 7
-    pub const P7 :  u8 = 0b1000_0000;
-
-    /// Pin 10 (only PCF8575)
-    pub const P10: u16 = 0b0000_0001_0000_0000;
-    /// Pin 11 (only PCF8575)
-    pub const P11: u16 = 0b0000_0010_0000_0000;
-    /// Pin 12 (only PCF8575)
-    pub const P12: u16 = 0b0000_0100_0000_0000;
-    /// Pin 13 (only PCF8575)
-    pub const P13: u16 = 0b0000_1000_0000_0000;
-    /// Pin 14 (only PCF8575)
-    pub const P14: u16 = 0b0001_0000_0000_0000;
-    /// Pin 15 (only PCF8575)
-    pub const P15: u16 = 0b0010_0000_0000_0000;
-    /// Pin 16 (only PCF8575)
-    pub const P16: u16 = 0b0100_0000_0000_0000;
-    /// Pin 17 (only PCF8575)
-    pub const P17: u16 = 0b1000_0000_0000_0000;
+pub struct PinFlag {
+    mask: u16
 }
 
+impl PinFlag {
+    /// Pin 0
+    pub const P0  :  PinFlag = PinFlag { mask:     1 };
+    /// Pin 1
+    pub const P1  :  PinFlag = PinFlag { mask:     2 };
+    /// Pin 2
+    pub const P2  :  PinFlag = PinFlag { mask:     4 };
+    /// Pin 3
+    pub const P3  :  PinFlag = PinFlag { mask:     8 };
+    /// Pin 4
+    pub const P4  :  PinFlag = PinFlag { mask:    16 };
+    /// Pin 5
+    pub const P5  :  PinFlag = PinFlag { mask:    32 };
+    /// Pin 6
+    pub const P6  :  PinFlag = PinFlag { mask:    64 };
+    /// Pin 7
+    pub const P7  :  PinFlag = PinFlag { mask:   128 };
+
+    /// Pin 10 (only PCF8575)
+    pub const P10 :  PinFlag = PinFlag { mask:   256 };
+    /// Pin 11 (only PCF8575)
+    pub const P11 :  PinFlag = PinFlag { mask:   512 };
+    /// Pin 12 (only PCF8575)
+    pub const P12 :  PinFlag = PinFlag { mask:  1024 };
+    /// Pin 13 (only PCF8575)
+    pub const P13 :  PinFlag = PinFlag { mask:  2048 };
+    /// Pin 14 (only PCF8575)
+    pub const P14 :  PinFlag = PinFlag { mask:  4096 };
+    /// Pin 15 (only PCF8575)
+    pub const P15 :  PinFlag = PinFlag { mask:  8192 };
+    /// Pin 16 (only PCF8575)
+    pub const P16 :  PinFlag = PinFlag { mask: 16384 };
+    /// Pin 17 (only PCF8575)
+    pub const P17 :  PinFlag = PinFlag { mask: 32768 };
+}
+
+use core::ops::BitOr;
+
+impl BitOr for PinFlag {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self {
+        PinFlag { mask: self.mask | rhs.mask }
+    }
+}
 
 /// Possible slave addresses
 #[derive(Debug)]
@@ -208,6 +221,17 @@ macro_rules! pcf8574 {
                 self.last_set_mask = bits;
                 Ok(())
             }
+
+            /// Set the status of all I/O pins repeatedly by looping through each array element
+            pub fn write_array(&mut self, data: &[u8]) -> Result<(), Error<E>> {
+                if let Some(last) = data.last() {
+                    self.i2c
+                        .write(self.address, &data)
+                        .map_err(Error::I2C)?;
+                    self.last_set_mask = *last;
+                }
+                Ok(())
+            }
         }
 
         impl<I2C, E> $device_name<I2C>
@@ -216,9 +240,12 @@ macro_rules! pcf8574 {
         {
             /// Get the status of the selected I/O pins.
             /// The mask of the pins to be read can be created with a combination of
-            /// `PinFlags::P0` to `PinFlags::P7`.
-            pub fn get(&mut self, mask: u8) -> Result<u8, Error<E>> {
-                let mask = mask | self.last_set_mask;
+            /// `PinFlag::P0` to `PinFlag::P7`.
+            pub fn get(&mut self, mask: &PinFlag) -> Result<u8, Error<E>> {
+                if (mask.mask >> 8) != 0 {
+                    return Err(Error::InvalidInputData);
+                }
+                let mask = mask.mask as u8 | self.last_set_mask;
                 // configure selected pins as inputs
                 self.i2c
                     .write(self.address, &[mask])
@@ -228,6 +255,28 @@ macro_rules! pcf8574 {
                 self.i2c
                     .read(self.address, &mut bits)
                     .map_err(Error::I2C).and(Ok(bits[0]))
+            }
+
+            /// Get the status of the selected I/O pins repeatedly and put them in the
+            /// provided array.
+            /// The mask of the pins to be read can be created with a combination of
+            /// `PinFlag::P0` to `PinFlag::P7`.
+            pub fn read_array(&mut self, mask: &PinFlag, mut data: &mut [u8]) -> Result<(), Error<E>> {
+                if !data.is_empty() {
+                    if (mask.mask >> 8) != 0 {
+                       return Err(Error::InvalidInputData);
+                    }
+                    let mask = mask.mask as u8 | self.last_set_mask;
+                    // configure selected pins as inputs
+                    self.i2c
+                        .write(self.address, &[mask])
+                        .map_err(Error::I2C)?;
+
+                    self.i2c
+                        .read(self.address, &mut data)
+                        .map_err(Error::I2C)?;
+                }
+                Ok(())
             }
         }
 
@@ -275,6 +324,22 @@ where
         self.last_set_mask = bits;
         Ok(())
     }
+
+    /// Set the status of all I/O pins repeatedly by looping through each array element.
+    /// The even elements correspond to the status of P0-P7 and the odd ones P10-P17.
+    /// The number of elements in the data must be even.
+    pub fn write_array(&mut self, data: &[u8]) -> Result<(), Error<E>> {
+        if !data.is_empty() {
+            if data.len() % 2 != 0 {
+                return Err(Error::InvalidInputData);
+            }
+            self.i2c
+                .write(self.address, &data)
+                .map_err(Error::I2C)?;
+            self.last_set_mask = ((data[data.len()-1] as u16) << 8) | data[data.len()-2] as u16;
+        }
+        Ok(())
+    }
 }
 
 impl<I2C, E> PCF8575<I2C>
@@ -283,9 +348,9 @@ where
 {
     /// Get the status of the selected I/O pins.
     /// The mask of the pins to be read can be created with a combination of
-    /// `PinFlags::P0` to `PinFlags::P17`.
-    pub fn get(&mut self, mask: u16) -> Result<u16, Error<E>> {
-        let mask = mask | self.last_set_mask;
+    /// `PinFlag::P0` to `PinFlag::P17`.
+    pub fn get(&mut self, mask: &PinFlag) -> Result<u16, Error<E>> {
+        let mask = mask.mask | self.last_set_mask;
         // configure selected pins as inputs
         self.i2c
             .write(self.address, &u16_to_u8_array(mask)[..])
@@ -295,6 +360,30 @@ where
         self.i2c
             .read(self.address, &mut bits)
             .map_err(Error::I2C).and(Ok(u8_array_to_u16(bits)))
+    }
+
+    /// Get the status of the selected I/O pins repeatedly and put them in the
+    /// provided array.
+    /// The mask of the pins to be read can be created with a combination of
+    /// `PinFlag::P0` to `PinFlag::P17`.
+    /// The even elements correspond to the status of P0-P7 and the odd ones P10-P17.
+    /// The number of elements in the data must be even.
+    pub fn read_array(&mut self, mask: &PinFlag, mut data: &mut [u8]) -> Result<(), Error<E>> {
+        if !data.is_empty() {
+            if data.len() % 2 != 0 {
+                return Err(Error::InvalidInputData);
+            }
+            let mask = mask.mask | self.last_set_mask;
+            // configure selected pins as inputs
+            self.i2c
+                .write(self.address, &u16_to_u8_array(mask))
+                .map_err(Error::I2C)?;
+
+            self.i2c
+                .read(self.address, &mut data)
+                .map_err(Error::I2C)?;
+        }
+        Ok(())
     }
 }
 
@@ -329,6 +418,27 @@ mod tests {
     }
 
     #[test]
+    fn pin_flags_are_correct() {
+        assert_eq!(1,   PinFlag::P0.mask);
+        assert_eq!(2,   PinFlag::P1.mask);
+        assert_eq!(4,   PinFlag::P2.mask);
+        assert_eq!(8,   PinFlag::P3.mask);
+        assert_eq!(16,  PinFlag::P4.mask);
+        assert_eq!(32,  PinFlag::P5.mask);
+        assert_eq!(64,  PinFlag::P6.mask);
+        assert_eq!(128, PinFlag::P7.mask);
+
+        assert_eq!(1 << 8,   PinFlag::P10.mask);
+        assert_eq!(2 << 8,   PinFlag::P11.mask);
+        assert_eq!(4 << 8,   PinFlag::P12.mask);
+        assert_eq!(8 << 8,   PinFlag::P13.mask);
+        assert_eq!(16 << 8,  PinFlag::P14.mask);
+        assert_eq!(32 << 8,  PinFlag::P15.mask);
+        assert_eq!(64 << 8,  PinFlag::P16.mask);
+        assert_eq!(128 << 8, PinFlag::P17.mask);
+    }
+
+    #[test]
     fn can_convert_u16_to_u8_array() {
         assert_eq!([0xCD, 0xAB], u16_to_u8_array(0xABCD));
     }
@@ -336,6 +446,129 @@ mod tests {
     #[test]
     fn can_convert_u8_array_to_u16() {
         assert_eq!(0xABCD, u8_array_to_u16([0xCD, 0xAB]));
+    }
+
+    macro_rules! pcf8574_tests {
+        ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
+            mod $test_mod_name {
+                use super::*;
+                fn setup<'a>(data: &'a[u8]) -> $device_name<hal::I2cMock<'a>> {
+                    let mut dev = hal::I2cMock::new();
+                    dev.set_read_data(&data);
+                    $device_name::new(dev, SlaveAddr::default())
+                }
+
+                fn check_sent_data(expander: $device_name<hal::I2cMock>, data: &[u8]) {
+                    let dev = expander.destroy();
+                    assert_eq!(dev.get_last_address(), Some($default_address));
+                    assert_eq!(dev.get_write_data(), &data[..]);
+                }
+
+                #[test]
+                fn can_read_pins() {
+                    let mut expander = setup(&[0x01]);
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    let status = expander.get(&mask).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8]);
+                    assert_eq!(0x01, status);
+                }
+
+                #[test]
+                fn read_conserves_output_high_pins() {
+                    let mut expander = setup(&[0x01]);
+                    let write_status = 0b0101_1010;
+                    expander.set(write_status).unwrap();
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    let read_status = expander.get(&mask).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8 | write_status]);
+                    assert_eq!(0x01, read_status);
+                }
+
+                #[test]
+                fn can_read_multiple_words() {
+                    let mut data = [0; 2];
+                    let mut expander = setup(&[0xAB, 0xCD]);
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    expander.read_array(&mask, &mut data).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8]);
+                    assert_eq!([0xAB, 0xCD], data);
+                }
+
+
+                #[test]
+                fn reading_multiple_words_conserves_high_pins() {
+                    let mut expander = setup(&[0xAB, 0xCD]);
+                    let write_status = 0b0101_1010;
+                    expander.set(write_status).unwrap();
+                    let mut read_data = [0; 2];
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    expander.read_array(&mask, &mut read_data).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8 | write_status]);
+                    assert_eq!([0xAB, 0xCD], read_data);
+                }
+            }
+        }
+    }
+
+    pcf8574_tests!(PCF8574,  pcf8574_tests,  0b010_0000);
+    pcf8574_tests!(PCF8574A, pcf8574a_tests, 0b011_1000);
+
+    mod pcf8575_tests {
+        use super::*;
+        fn setup<'a>(data: &'a[u8]) -> PCF8575<hal::I2cMock<'a>> {
+            let mut dev = hal::I2cMock::new();
+            dev.set_read_data(&data);
+            PCF8575::new(dev, SlaveAddr::default())
+        }
+
+        fn check_sent_data(expander: PCF8575<hal::I2cMock>, data: &[u8]) {
+            let dev = expander.destroy();
+            assert_eq!(dev.get_last_address(), Some(0b010_0000));
+            assert_eq!(dev.get_write_data(), &data[..]);
+        }
+
+        #[test]
+        fn can_read_pins() {
+            let mut expander = setup(&[0x00, 0x01]);
+            let mask = PinFlag::P0 | PinFlag::P17;
+            let status = expander.get(&mask).unwrap();
+            check_sent_data(expander, &u16_to_u8_array(mask.mask));
+            assert_eq!(0x0100, status);
+        }
+
+        #[test]
+        fn read_conserves_output_high_pins() {
+            let mut expander = setup(&[0x00, 0x01]);
+            let write_status = 0b0101_0101_0101_0101;
+            expander.set(write_status).unwrap();
+            let mask = PinFlag::P0 | PinFlag::P17;
+            let read_status = expander.get(&mask).unwrap();
+            check_sent_data(expander, &u16_to_u8_array(mask.mask | write_status));
+            assert_eq!(0x0100, read_status);
+        }
+
+        #[test]
+        fn can_read_multiple_words() {
+            let mut data = [0; 2];
+            let mut expander = setup(&[0xAB, 0xCD]);
+            let mask = PinFlag::P0 | PinFlag::P17;
+            expander.read_array(&mask, &mut data).unwrap();
+            check_sent_data(expander, &u16_to_u8_array(mask.mask));
+            assert_eq!([0xAB, 0xCD], data);
+        }
+
+
+        #[test]
+        fn reading_multiple_words_conserves_high_pins() {
+            let mut expander = setup(&[0xAB, 0xCD]);
+            let write_status = 0b0101_1010;
+            expander.set(write_status).unwrap();
+            let mut read_data = [0; 2];
+            let mask = PinFlag::P0 | PinFlag::P17;
+            expander.read_array(&mask, &mut read_data).unwrap();
+            check_sent_data(expander, &u16_to_u8_array(mask.mask | write_status));
+            assert_eq!([0xAB, 0xCD], read_data);
+        }
     }
 }
 
