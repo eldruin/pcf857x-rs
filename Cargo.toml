@@ -6,7 +6,7 @@ repository = "https://github.com/eldruin/pcf857x-rs"
 license = "MIT OR Apache-2.0"
 description = "Platform-agnostic Rust driver for the PCF8574, PCF8574A and PCF8575 I/O expanders."
 readme = "README.md"
-keywords = ["eeprom", "i2c", "driver", "embedded-hal-driver"]
+keywords = ["io", "expander", "i2c", "driver", "embedded-hal-driver"]
 categories = ["embedded", "hardware-support", "no-std"]
 include = [
     "**/*.rs",
