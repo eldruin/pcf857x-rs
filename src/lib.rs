@@ -4,8 +4,10 @@
 //! [`embedded-hal`]: https://github.com/japaric/embedded-hal
 //!
 //! This driver allows you to:
-//! - Set all the outputs to 0 or 1 at once
-//! - Read selected inputs
+//! - Set all the outputs to `0` or `1` at once.
+//! - Read selected inputs.
+//! - Set all the outputs repeatedly looping through an array.
+//! - Read selected inputs repeatedly filling up an array.
 //!
 //! ## The devices
 //! The devices consist of 8 or 16 quasi-bidirectional ports, I²C-bus interface, three
