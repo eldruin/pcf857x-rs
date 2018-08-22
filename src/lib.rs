@@ -1,5 +1,6 @@
 //! This is a platform agnostic Rust driver for the PCF8574, PCF8574A and PCF8575
 //! I/O expanders, based on the [`embedded-hal`] traits.
+//!
 //! [`embedded-hal`]: https://github.com/japaric/embedded-hal
 //!
 //! This driver allows you to:
