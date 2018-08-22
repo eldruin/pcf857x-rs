@@ -98,7 +98,7 @@ pub enum Error<E> {
 }
 
 /// I/O pin flags, used to select which pins to read in the `get` functions.
-/// It is possible to select multiple of them using the _or_ operator.
+/// It is possible to select multiple of them using the binary _or_ operator (`|`).
 /// ```
 /// # use pcf857x::PinFlag;
 /// let pins_to_be_read = PinFlag::P0 | PinFlag::P1;
