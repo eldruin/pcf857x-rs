@@ -19,6 +19,7 @@ include = [
 
 [features]
 default = []
+std = []
 
 [dependencies]
 embedded-hal = "0.2"
