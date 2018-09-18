@@ -1,6 +1,6 @@
 extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{PCF8574, PCF8574A, SlaveAddr, PinFlag, Error};
+use pcf857x::{PCF8574, PCF8574A, SlaveAddr, PinFlag, Error, OutputPin};
 
 macro_rules! pcf8574_tests {
     ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
@@ -75,6 +75,42 @@ macro_rules! pcf8574_tests {
                     Err(Error::InvalidInputData) => (),
                     _ => panic!()
                 }
+            }
+            pcf8574_pin_test!(p0,   1);
+            pcf8574_pin_test!(p1,   2);
+            pcf8574_pin_test!(p2,   4);
+            pcf8574_pin_test!(p3,   8);
+            pcf8574_pin_test!(p4,  16);
+            pcf8574_pin_test!(p5,  32);
+            pcf8574_pin_test!(p6,  64);
+            pcf8574_pin_test!(p7, 128);
+        }
+    }
+}
+
+macro_rules! pcf8574_pin_test {
+    ($px:ident, $value:expr) => {
+        mod $px {
+            use super::*;
+            #[test]
+            fn can_split_and_set_high() {
+                let expander = setup(&[0]);
+                {
+                  let mut parts = expander.split();
+                  parts.$px.set_high();
+                }
+                check_sent_data(expander, &[$value]);
+            }
+
+            #[test]
+            fn can_split_and_set_low() {
+                let mut expander = setup(&[0]);
+                expander.set(0b1111_1111).unwrap();
+                {
+                  let mut parts = expander.split();
+                  parts.$px.set_low();
+                }
+                check_sent_data(expander, &[0b1111_1111 & !$value]);
             }
         }
     }

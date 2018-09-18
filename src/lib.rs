@@ -8,6 +8,7 @@
 //! - Read selected inputs.
 //! - Set all the outputs repeatedly looping through an array.
 //! - Read selected inputs repeatedly filling up an array.
+//! - Split the device into individual output pins.
 //!
 //! ## The devices
 //! The devices consist of 8 or 16 quasi-bidirectional ports, I²C-bus interface, three
@@ -83,6 +84,25 @@
 //! println!("Input pin status: {}", read_input_pin_status);
 //! # }
 //! ```
+//!
+//! ### Splitting device into individual output pins and setting them.
+//!
+//! ```no_run
+//! extern crate linux_embedded_hal as hal;
+//! extern crate pcf857x;
+//!
+//! use hal::{I2cdev};
+//! use pcf857x::{PCF8574, SlaveAddr, PinFlag, OutputPin};
+//!
+//! # fn main() {
+//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
+//! let address = SlaveAddr::default();
+//! let expander = PCF8574::new(dev, address);
+//! let mut parts = expander.split();
+//! parts.p0.set_high();
+//! parts.p7.set_low();
+//! # }
+//! ```
 
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
@@ -90,6 +110,21 @@
 
 extern crate embedded_hal as hal;
 use hal::blocking::i2c::Write;
+pub use hal::digital::OutputPin;
+
+#[cfg(feature = "std")]
+use std::cell;
+
+#[cfg(not(feature = "std"))]
+use core::cell;
+
+#[cfg(feature = "std")]
+use std::marker;
+
+#[cfg(not(feature = "std"))]
+use core::marker;
+
+use marker::PhantomData;
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -97,7 +132,9 @@ pub enum Error<E> {
     /// I²C bus error
     I2C(E),
     /// Invalid input data
-    InvalidInputData
+    InvalidInputData,
+    /// Could not acquire device. Maybe it is already acquired.
+    CouldNotAcquireDevice
 }
 
 /// I/O pin flags, used to select which pins to read in the `get` functions.
@@ -185,11 +222,60 @@ impl SlaveAddr {
     }
 }
 
+mod pins;
+
+macro_rules! pins {
+    ( $( $PX:ident ),+ ) => {
+        $(  /// Pin
+            pub struct $PX<'a, IC: 'a, E>(&'a IC, PhantomData<E>);
+        )*
+    }
+}
+pins!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
+      P10, P11, P12, P13, P14, P15, P16, P17);
+
+macro_rules! parts {
+    ( $( $px:ident, $PX:ident ),+ ) => {
+        $(
+            use super::$PX;
+        )*
+        /// Pins
+        pub struct Parts<'a, IC:'a, E> {
+            $(
+                /// Pin
+                pub $px: $PX<'a, IC, E>,
+            )*
+        }
+
+        use super::PhantomData;
+        impl<'a, IC:'a, E> Parts<'a, IC, E> {
+            pub(crate) fn new(ic: &'a IC) -> Self {
+                Parts {
+                    $(
+                        $px: $PX(&ic, PhantomData),
+                    )*
+                }
+            }
+        }
+    }
+}
+
+/// Module containing structures specific to PCF8574 and PCF8574A
+pub mod pcf8574 {
+    parts!(p0, P0, p1, P1, p2, P2, p3, P3, p4, P4, p5, P5, p6, P6, p7, P7);
+}
+
 macro_rules! pcf8574 {
-    ( $device_name:ident, $default_address:expr ) => {
+    ( $device_name:ident, $device_data_name:ident, $default_address:expr ) => {
         /// Device driver
         #[derive(Debug, Default)]
         pub struct $device_name<I2C> {
+            /// Data
+            data: cell::RefCell<$device_data_name<I2C>>
+        }
+
+        #[derive(Debug, Default)]
+        struct $device_data_name<I2C> {
             /// The concrete I²C device implementation.
             i2c: I2C,
             /// The I²C device address.
@@ -204,36 +290,52 @@ macro_rules! pcf8574 {
         {
             /// Create new instance of the device
             pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
-                $device_name {
+                let data = $device_data_name {
                     i2c,
                     address: address.addr($default_address),
                     last_set_mask: 0
+                };
+                $device_name {
+                    data: cell::RefCell::new(data)
                 }
             }
 
             /// Destroy driver instance, return I²C bus instance.
             pub fn destroy(self) -> I2C {
-                self.i2c
+                self.data.into_inner().i2c
+            }
+
+            fn acquire_device(&self) -> Result<cell::RefMut<$device_data_name<I2C>>, Error<E>> {
+                self.data.try_borrow_mut().map_err(|_| Error::CouldNotAcquireDevice)
             }
 
             /// Set the status of all I/O pins.
             pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
-                self.i2c
-                    .write(self.address, &[bits])
+                let mut dev = self.acquire_device()?;
+                let address = dev.address;
+                dev.i2c
+                    .write(address, &[bits])
                     .map_err(Error::I2C)?;
-                self.last_set_mask = bits;
+                dev.last_set_mask = bits;
                 Ok(())
             }
 
             /// Set the status of all I/O pins repeatedly by looping through each array element
             pub fn write_array(&mut self, data: &[u8]) -> Result<(), Error<E>> {
                 if let Some(last) = data.last() {
-                    self.i2c
-                        .write(self.address, &data)
+                    let mut dev = self.acquire_device()?;
+                    let address = dev.address;
+                    dev.i2c
+                        .write(address, &data)
                         .map_err(Error::I2C)?;
-                    self.last_set_mask = *last;
+                    dev.last_set_mask = *last;
                 }
                 Ok(())
+            }
+
+            /// Split device into individual pins
+            pub fn split<'a>(&'a self) -> pcf8574::Parts<'a, $device_name<I2C>, E> {
+                pcf8574::Parts::new(&self)
             }
         }
 
@@ -248,15 +350,17 @@ macro_rules! pcf8574 {
                 if (mask.mask >> 8) != 0 {
                     return Err(Error::InvalidInputData);
                 }
-                let mask = mask.mask as u8 | self.last_set_mask;
+                let mut dev = self.acquire_device()?;
+                let mask = mask.mask as u8 | dev.last_set_mask;
+                let address = dev.address;
                 // configure selected pins as inputs
-                self.i2c
-                    .write(self.address, &[mask])
+                dev.i2c
+                    .write(address, &[mask])
                     .map_err(Error::I2C)?;
 
                 let mut bits = [0];
-                self.i2c
-                    .read(self.address, &mut bits)
+                dev.i2c
+                    .read(address, &mut bits)
                     .map_err(Error::I2C).and(Ok(bits[0]))
             }
 
@@ -269,14 +373,16 @@ macro_rules! pcf8574 {
                     if (mask.mask >> 8) != 0 {
                        return Err(Error::InvalidInputData);
                     }
-                    let mask = mask.mask as u8 | self.last_set_mask;
+                    let mut dev = self.acquire_device()?;
+                    let mask = mask.mask as u8 | dev.last_set_mask;
+                    let address = dev.address;
                     // configure selected pins as inputs
-                    self.i2c
-                        .write(self.address, &[mask])
+                    dev.i2c
+                        .write(address, &[mask])
                         .map_err(Error::I2C)?;
 
-                    self.i2c
-                        .read(self.address, &mut data)
+                    dev.i2c
+                        .read(address, &mut data)
                         .map_err(Error::I2C)?;
                 }
                 Ok(())
@@ -286,8 +392,8 @@ macro_rules! pcf8574 {
     };
 }
 
-pcf8574!(PCF8574,  0b010_0000);
-pcf8574!(PCF8574A, 0b011_1000);
+pcf8574!(PCF8574,  PCF8574Data,  0b010_0000);
+pcf8574!(PCF8574A, PCF8574AData, 0b011_1000);
 
 
 /// PCF8575 device driver
