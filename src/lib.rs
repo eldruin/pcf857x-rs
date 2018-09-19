@@ -118,14 +118,6 @@ use std::cell;
 #[cfg(not(feature = "std"))]
 use core::cell;
 
-#[cfg(feature = "std")]
-use std::marker;
-
-#[cfg(not(feature = "std"))]
-use core::marker;
-
-use marker::PhantomData;
-
 /// All possible errors in this crate
 #[derive(Debug)]
 pub enum Error<E> {
@@ -223,47 +215,11 @@ impl SlaveAddr {
 }
 
 mod pins;
+pub use pins::{ pcf8574,
+                 P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
+                P10, P11, P12, P13, P14, P15, P16, P17 };
+mod set_bits;
 
-macro_rules! pins {
-    ( $( $PX:ident ),+ ) => {
-        $(  /// Pin
-            pub struct $PX<'a, IC: 'a, E>(&'a IC, PhantomData<E>);
-        )*
-    }
-}
-pins!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
-      P10, P11, P12, P13, P14, P15, P16, P17);
-
-macro_rules! parts {
-    ( $( $px:ident, $PX:ident ),+ ) => {
-        $(
-            use super::$PX;
-        )*
-        /// Pins
-        pub struct Parts<'a, IC:'a, E> {
-            $(
-                /// Pin
-                pub $px: $PX<'a, IC, E>,
-            )*
-        }
-
-        use super::PhantomData;
-        impl<'a, IC:'a, E> Parts<'a, IC, E> {
-            pub(crate) fn new(ic: &'a IC) -> Self {
-                Parts {
-                    $(
-                        $px: $PX(&ic, PhantomData),
-                    )*
-                }
-            }
-        }
-    }
-}
-
-/// Module containing structures specific to PCF8574 and PCF8574A
-pub mod pcf8574 {
-    parts!(p0, P0, p1, P1, p2, P2, p3, P3, p4, P4, p5, P5, p6, P6, p7, P7);
-}
 
 macro_rules! pcf8574 {
     ( $device_name:ident, $device_data_name:ident, $default_address:expr ) => {

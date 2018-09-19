@@ -2,27 +2,65 @@
 #![deny(missing_docs)]
 
 extern crate embedded_hal as hal;
-use hal::blocking::i2c::Write;
 pub use hal::digital::OutputPin;
 
-use super::{ Error, PinFlag, PCF8574, PCF8574A,
-              P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
-             P10, P11, P12, P13, P14, P15, P16, P17 };
+use super::{ Error, PinFlag };
+use super::set_bits;
 
+#[cfg(feature = "std")]
+use std::marker;
 
-/// Set a number of bits high or low
-pub trait SetBits<T, E> {
-    /// Set a number of bits high
-    fn set_bits_high(&self, bitmask: T) -> Result<(), Error<E>>;
-    /// Set a number of bits low
-    fn set_bits_low (&self, bitmask: T) -> Result<(), Error<E>>;
+#[cfg(not(feature = "std"))]
+use core::marker;
+
+use self::marker::PhantomData;
+
+macro_rules! pins {
+    ( $( $PX:ident ),+ ) => {
+        $(  /// Pin
+            pub struct $PX<'a, IC: 'a, E>(&'a IC, PhantomData<E>);
+        )*
+    }
+}
+pins!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
+      P10, P11, P12, P13, P14, P15, P16, P17);
+
+macro_rules! parts {
+    ( $( $px:ident, $PX:ident ),+ ) => {
+        $(
+            use super::$PX;
+        )*
+        /// Pins
+        pub struct Parts<'a, IC:'a, E> {
+            $(
+                /// Pin
+                pub $px: $PX<'a, IC, E>,
+            )*
+        }
+
+        use super::PhantomData;
+        impl<'a, IC:'a, E> Parts<'a, IC, E> {
+            pub(crate) fn new(ic: &'a IC) -> Self {
+                Parts {
+                    $(
+                        $px: $PX(&ic, PhantomData),
+                    )*
+                }
+            }
+        }
+    }
+}
+
+/// Module containing structures specific to PCF8574 and PCF8574A
+pub mod pcf8574 {
+    parts!(p0, P0, p1, P1, p2, P2, p3, P3, p4, P4, p5, P5, p6, P6, p7, P7);
 }
 
 macro_rules! output_pin_impl {
     ( $T:ty, [ $( $PX:ident ),+ ] ) => {
         $(
             impl<'a, S, E> OutputPin for $PX<'a, S, E>
-            where S: SetBits<$T, E> {
+            where S: set_bits::SetBits<$T, E> {
 
                 fn set_high(&mut self) {
                     match self.0.set_bits_high(PinFlag::$PX.mask) {
@@ -47,46 +85,4 @@ macro_rules! output_pin_impl {
 output_pin_impl!(u16, [ P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
                        P10, P11, P12, P13, P14, P15, P16, P17]);
 
-macro_rules! set_bits_impl {
-    ( $( $device_name:ident ),+ ) => {
-        $(
-            // The type is u16 here to reuse PinFlags everywhere and for compatibility
-            // with PCF8575. This is only internal so users cannot misuse it.
-            // The methods require only an immutable reference but the actual mutable device
-            // is wrapped in a RefCell and will be aquired mutably on execution.
-            // Again, this is only internal so users cannot misuse it.
-            impl<I2C, E> SetBits<u16, E> for $device_name<I2C>
-            where
-                I2C: Write<Error = E>
-            {
-                fn set_bits_high(&self, bitmask: u16) -> Result<(), Error<E>> {
-                    let mut dev = self.acquire_device()?;
-                    let new_mask = dev.last_set_mask | bitmask as u8;
-                    if dev.last_set_mask != new_mask {
-                        let address = dev.address;
-                        dev.i2c
-                            .write(address, &[new_mask])
-                            .map_err(Error::I2C)?;
-                        dev.last_set_mask = new_mask;
-                    }
-                    Ok(())
-                }
 
-                fn set_bits_low(&self, bitmask: u16) -> Result<(), Error<E>> {
-                    let mut dev = self.acquire_device()?;
-                    let new_mask = dev.last_set_mask & !bitmask as u8;
-                    if dev.last_set_mask != new_mask {
-                        let address = dev.address;
-                        dev.i2c
-                            .write(address, &[new_mask])
-                            .map_err(Error::I2C)?;
-                        dev.last_set_mask = new_mask;
-                    }
-                    Ok(())
-                }
-            }
-        )*
-    }
-}
-
-set_bits_impl!(PCF8574, PCF8574A);
