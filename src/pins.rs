@@ -57,13 +57,13 @@ pub mod pcf8574 {
 }
 
 macro_rules! output_pin_impl {
-    ( $T:ty, [ $( $PX:ident ),+ ] ) => {
+    ( $( $PX:ident ),+ ) => {
         $(
             impl<'a, S, E> OutputPin for $PX<'a, S, E>
-            where S: set_bits::SetBits<$T, E> {
+            where S: set_bits::SetBits<E> {
 
                 fn set_high(&mut self) {
-                    match self.0.set_bits_high(PinFlag::$PX.mask) {
+                    match self.0.set_bits_high(PinFlag::$PX) {
                         Err(Error::CouldNotAcquireDevice) => panic!("Could not set pin to high. Could not acquire device."),
                         Err(_) => panic!("Could not set pin to high."),
                         _ => ()
@@ -71,7 +71,7 @@ macro_rules! output_pin_impl {
                 }
                 
                 fn set_low(&mut self) {
-                    match self.0.set_bits_low(PinFlag::$PX.mask) {
+                    match self.0.set_bits_low(PinFlag::$PX) {
                         Err(Error::CouldNotAcquireDevice) => panic!("Could not set pin to high. Could not acquire device."),
                         Err(_) => panic!("Could not set pin to high."),
                         _ => ()
@@ -82,7 +82,7 @@ macro_rules! output_pin_impl {
     }
 }
 
-output_pin_impl!(u16, [ P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
-                       P10, P11, P12, P13, P14, P15, P16, P17]);
+output_pin_impl!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
+                 P10, P11, P12, P13, P14, P15, P16, P17 );
 
 
