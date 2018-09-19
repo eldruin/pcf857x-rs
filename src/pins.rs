@@ -5,7 +5,6 @@ extern crate embedded_hal as hal;
 pub use hal::digital::OutputPin;
 
 use super::{ Error, PinFlag };
-use super::set_bits;
 
 #[cfg(feature = "std")]
 use std::marker;
@@ -56,11 +55,19 @@ pub mod pcf8574 {
     parts!(p0, P0, p1, P1, p2, P2, p3, P3, p4, P4, p5, P5, p6, P6, p7, P7);
 }
 
+/// Set a number of bits high or low
+pub trait SetBits<E> {
+    /// Set a number of bits high
+    fn set_bits_high(&self, bitmask: PinFlag) -> Result<(), Error<E>>;
+    /// Set a number of bits low
+    fn set_bits_low (&self, bitmask: PinFlag) -> Result<(), Error<E>>;
+}
+
 macro_rules! output_pin_impl {
     ( $( $PX:ident ),+ ) => {
         $(
             impl<'a, S, E> OutputPin for $PX<'a, S, E>
-            where S: set_bits::SetBits<E> {
+            where S: SetBits<E> {
 
                 fn set_high(&mut self) {
                     match self.0.set_bits_high(PinFlag::$PX) {
