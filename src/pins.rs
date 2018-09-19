@@ -55,22 +55,22 @@ pub mod pcf8574 {
     parts!(p0, P0, p1, P1, p2, P2, p3, P3, p4, P4, p5, P5, p6, P6, p7, P7);
 }
 
-/// Set a number of bits high or low
-pub trait SetBits<E> {
-    /// Set a number of bits high
-    fn set_bits_high(&self, bitmask: PinFlag) -> Result<(), Error<E>>;
-    /// Set a number of bits low
-    fn set_bits_low (&self, bitmask: PinFlag) -> Result<(), Error<E>>;
+/// Set a pin high or low
+pub trait SetPin<E> {
+    /// Set a pin high
+    fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>>;
+    /// Set a pin low
+    fn set_pin_low (&self, pin_flag: PinFlag) -> Result<(), Error<E>>;
 }
 
 macro_rules! output_pin_impl {
     ( $( $PX:ident ),+ ) => {
         $(
             impl<'a, S, E> OutputPin for $PX<'a, S, E>
-            where S: SetBits<E> {
+            where S: SetPin<E> {
 
                 fn set_high(&mut self) {
-                    match self.0.set_bits_high(PinFlag::$PX) {
+                    match self.0.set_pin_high(PinFlag::$PX) {
                         Err(Error::CouldNotAcquireDevice) => panic!("Could not set pin to high. Could not acquire device."),
                         Err(_) => panic!("Could not set pin to high."),
                         _ => ()
@@ -78,7 +78,7 @@ macro_rules! output_pin_impl {
                 }
                 
                 fn set_low(&mut self) {
-                    match self.0.set_bits_low(PinFlag::$PX) {
+                    match self.0.set_pin_low(PinFlag::$PX) {
                         Err(Error::CouldNotAcquireDevice) => panic!("Could not set pin to high. Could not acquire device."),
                         Err(_) => panic!("Could not set pin to high."),
                         _ => ()

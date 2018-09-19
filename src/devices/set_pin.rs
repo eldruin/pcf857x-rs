@@ -8,7 +8,7 @@ use super::super::{ Error, PCF8574, PCF8574A, PinFlag };
 use super::super::pins;
 
 
-macro_rules! set_bits_impl {
+macro_rules! set_pin_impl {
     ( $( $device_name:ident ),+ ) => {
         $(
             // The type is PinFlags everywhere and for compatibility
@@ -17,13 +17,13 @@ macro_rules! set_bits_impl {
             // The methods require only an immutable reference but the actual mutable device
             // is wrapped in a RefCell and will be aquired mutably on execution.
             // Again, this is only internal so users cannot misuse it.
-            impl<I2C, E> pins::SetBits<E> for $device_name<I2C>
+            impl<I2C, E> pins::SetPin<E> for $device_name<I2C>
             where
                 I2C: Write<Error = E>
             {
-                fn set_bits_high(&self, bitmask: PinFlag) -> Result<(), Error<E>> {
+                fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
                     let mut dev = self.acquire_device()?;
-                    let new_mask = dev.last_set_mask | bitmask.mask as u8;
+                    let new_mask = dev.last_set_mask | pin_flag.mask as u8;
                     if dev.last_set_mask != new_mask {
                         let address = dev.address;
                         dev.i2c
@@ -34,9 +34,9 @@ macro_rules! set_bits_impl {
                     Ok(())
                 }
 
-                fn set_bits_low(&self, bitmask: PinFlag) -> Result<(), Error<E>> {
+                fn set_pin_low(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
                     let mut dev = self.acquire_device()?;
-                    let new_mask = dev.last_set_mask & !bitmask.mask as u8;
+                    let new_mask = dev.last_set_mask & !pin_flag.mask as u8;
                     if dev.last_set_mask != new_mask {
                         let address = dev.address;
                         dev.i2c
@@ -51,4 +51,4 @@ macro_rules! set_bits_impl {
     }
 }
 
-set_bits_impl!(PCF8574, PCF8574A);
+set_pin_impl!(PCF8574, PCF8574A);
