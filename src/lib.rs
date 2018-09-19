@@ -35,7 +35,7 @@
 //! extern crate linux_embedded_hal as hal;
 //! extern crate pcf857x;
 //!
-//! use hal::{I2cdev};
+//! use hal::I2cdev;
 //! use pcf857x::{PCF8574, SlaveAddr};
 //!
 //! # fn main() {
@@ -51,7 +51,7 @@
 //! extern crate linux_embedded_hal as hal;
 //! extern crate pcf857x;
 //!
-//! use hal::{I2cdev};
+//! use hal::I2cdev;
 //! use pcf857x::{PCF8574, SlaveAddr};
 //!
 //! # fn main() {
@@ -68,7 +68,7 @@
 //! extern crate linux_embedded_hal as hal;
 //! extern crate pcf857x;
 //!
-//! use hal::{I2cdev};
+//! use hal::I2cdev;
 //! use pcf857x::{PCF8574, SlaveAddr, PinFlag};
 //!
 //! # fn main() {
@@ -91,7 +91,7 @@
 //! extern crate linux_embedded_hal as hal;
 //! extern crate pcf857x;
 //!
-//! use hal::{I2cdev};
+//! use hal::I2cdev;
 //! use pcf857x::{PCF8574, SlaveAddr, PinFlag, OutputPin};
 //!
 //! # fn main() {
