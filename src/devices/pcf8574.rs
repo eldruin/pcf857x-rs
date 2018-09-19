@@ -144,3 +144,113 @@ macro_rules! pcf8574 {
 
 pcf8574!(PCF8574,  PCF8574Data,  0b010_0000);
 pcf8574!(PCF8574A, PCF8574AData, 0b011_1000);
+
+
+#[cfg(test)]
+mod tests {
+    extern crate embedded_hal_mock as hal;
+
+    use super::*;
+
+    #[test]
+    fn can_get_default_address() {
+        let addr = SlaveAddr::default();
+        assert_eq!(0b010_0000, addr.addr(0b010_0000));
+    }
+
+    #[test]
+    fn can_generate_alternative_addresses() {
+        let default = 0b010_0000;
+        assert_eq!(0b010_0000, SlaveAddr::Alternative(false, false, false).addr(default));
+        assert_eq!(0b010_0001, SlaveAddr::Alternative(false, false,  true).addr(default));
+        assert_eq!(0b010_0010, SlaveAddr::Alternative(false,  true, false).addr(default));
+        assert_eq!(0b010_0100, SlaveAddr::Alternative( true, false, false).addr(default));
+        assert_eq!(0b010_0111, SlaveAddr::Alternative( true,  true,  true).addr(default));
+    }
+
+    #[test]
+    fn pin_flags_are_correct() {
+        assert_eq!(1,   PinFlag::P0.mask);
+        assert_eq!(2,   PinFlag::P1.mask);
+        assert_eq!(4,   PinFlag::P2.mask);
+        assert_eq!(8,   PinFlag::P3.mask);
+        assert_eq!(16,  PinFlag::P4.mask);
+        assert_eq!(32,  PinFlag::P5.mask);
+        assert_eq!(64,  PinFlag::P6.mask);
+        assert_eq!(128, PinFlag::P7.mask);
+
+        assert_eq!(1 << 8,   PinFlag::P10.mask);
+        assert_eq!(2 << 8,   PinFlag::P11.mask);
+        assert_eq!(4 << 8,   PinFlag::P12.mask);
+        assert_eq!(8 << 8,   PinFlag::P13.mask);
+        assert_eq!(16 << 8,  PinFlag::P14.mask);
+        assert_eq!(32 << 8,  PinFlag::P15.mask);
+        assert_eq!(64 << 8,  PinFlag::P16.mask);
+        assert_eq!(128 << 8, PinFlag::P17.mask);
+    }
+
+    macro_rules! pcf8574_tests {
+        ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
+            mod $test_mod_name {
+                use super::*;
+                fn setup<'a>(data: &'a[u8]) -> $device_name<hal::I2cMock<'a>> {
+                    let mut dev = hal::I2cMock::new();
+                    dev.set_read_data(&data);
+                    $device_name::new(dev, SlaveAddr::default())
+                }
+
+                fn check_sent_data(expander: $device_name<hal::I2cMock>, data: &[u8]) {
+                    let dev = expander.destroy();
+                    assert_eq!(dev.get_last_address(), Some($default_address));
+                    assert_eq!(dev.get_write_data(), &data[..]);
+                }
+
+                #[test]
+                fn can_read_pins() {
+                    let mut expander = setup(&[0x01]);
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    let status = expander.get(&mask).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8]);
+                    assert_eq!(0x01, status);
+                }
+
+                #[test]
+                fn read_conserves_output_high_pins() {
+                    let mut expander = setup(&[0x01]);
+                    let write_status = 0b0101_1010;
+                    expander.set(write_status).unwrap();
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    let read_status = expander.get(&mask).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8 | write_status]);
+                    assert_eq!(0x01, read_status);
+                }
+
+                #[test]
+                fn can_read_multiple_words() {
+                    let mut data = [0; 2];
+                    let mut expander = setup(&[0xAB, 0xCD]);
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    expander.read_array(&mask, &mut data).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8]);
+                    assert_eq!([0xAB, 0xCD], data);
+                }
+
+
+                #[test]
+                fn reading_multiple_words_conserves_high_pins() {
+                    let mut expander = setup(&[0xAB, 0xCD]);
+                    let write_status = 0b0101_1010;
+                    expander.set(write_status).unwrap();
+                    let mut read_data = [0; 2];
+                    let mask = PinFlag::P0 | PinFlag::P7;
+                    expander.read_array(&mask, &mut read_data).unwrap();
+                    check_sent_data(expander, &[mask.mask as u8 | write_status]);
+                    assert_eq!([0xAB, 0xCD], read_data);
+                }
+            }
+        }
+    }
+
+    pcf8574_tests!(PCF8574,  pcf8574_tests,  0b010_0000);
+    pcf8574_tests!(PCF8574A, pcf8574a_tests, 0b011_1000);
+}
