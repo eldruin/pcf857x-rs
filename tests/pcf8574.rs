@@ -1,6 +1,8 @@
 extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
 use pcf857x::{PCF8574, PCF8574A, SlaveAddr, PinFlag, Error, OutputPin};
+#[cfg(feature = "unproven")]
+use pcf857x::InputPin;
 
 macro_rules! pcf8574_tests {
     ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
@@ -111,6 +113,28 @@ macro_rules! pcf8574_pin_test {
                   parts.$px.set_low();
                 }
                 check_sent_data(expander, &[0b1111_1111 & !$value]);
+            }
+
+            #[cfg(feature = "unproven")]
+            #[test]
+            fn can_split_and_get_is_high() {
+                let expander = setup(&[$value]);
+                {
+                  let parts = expander.split();
+                  assert!(parts.$px.is_high());
+                }
+                check_sent_data(expander, &[$value]);
+            }
+
+            #[cfg(feature = "unproven")]
+            #[test]
+            fn can_split_and_get_is_low() {
+                let expander = setup(&[!$value]);
+                {
+                  let parts = expander.split();
+                  assert!(parts.$px.is_low());
+                }
+                check_sent_data(expander, &[$value]);
             }
         }
     }

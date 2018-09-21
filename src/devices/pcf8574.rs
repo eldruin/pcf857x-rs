@@ -104,7 +104,11 @@ macro_rules! pcf8574 {
                 if (mask.mask >> 8) != 0 {
                     return Err(Error::InvalidInputData);
                 }
-                let mut dev = self.acquire_device()?;
+                let dev = self.acquire_device()?;
+                Self::_get(dev, mask)
+            }
+
+            pub(crate) fn _get(mut dev: cell::RefMut<$device_data_name<I2C>>, mask: &PinFlag) -> Result<u8, Error<E>> {
                 let mask = mask.mask as u8 | dev.last_set_mask;
                 let address = dev.address;
                 // configure selected pins as inputs

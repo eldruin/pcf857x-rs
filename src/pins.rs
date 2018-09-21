@@ -4,6 +4,9 @@
 extern crate embedded_hal as hal;
 pub use hal::digital::OutputPin;
 
+#[cfg(feature = "unproven")]
+pub use hal::digital::InputPin;
+
 use super::{ Error, PinFlag };
 
 #[cfg(feature = "std")]
@@ -69,7 +72,15 @@ pub trait SetPin<E> {
     fn set_pin_low (&self, pin_flag: PinFlag) -> Result<(), Error<E>>;
 }
 
-macro_rules! output_pin_impl {
+/// Read if a pin is high or low
+pub trait GetPin<E> {
+    /// Reads a pin and returns whether it is high
+    fn is_pin_high(&self, pin_flag: PinFlag) -> Result<bool, Error<E>>;
+    /// Reads a pin and returns whether it is low
+    fn is_pin_low (&self, pin_flag: PinFlag) -> Result<bool, Error<E>>;
+}
+
+macro_rules! io_pin_impl {
     ( $( $PX:ident ),+ ) => {
         $(
             impl<'a, S, E> OutputPin for $PX<'a, S, E>
@@ -82,7 +93,7 @@ macro_rules! output_pin_impl {
                         _ => ()
                     }
                 }
-                
+
                 fn set_low(&mut self) {
                     match self.0.set_pin_low(PinFlag::$PX) {
                         Err(Error::CouldNotAcquireDevice) => panic!("Could not set pin to high. Could not acquire device."),
@@ -91,11 +102,32 @@ macro_rules! output_pin_impl {
                     }
                 }
             }
+
+            #[cfg(feature = "unproven")]
+            impl<'a, S, E> InputPin for $PX<'a, S, E>
+            where S: GetPin<E> {
+
+                fn is_high(&self) -> bool {
+                    match self.0.is_pin_high(PinFlag::$PX) {
+                        Err(Error::CouldNotAcquireDevice) => panic!("Could not read pin status. Could not acquire device."),
+                        Err(_) => panic!("Could not read pin status."),
+                        Ok(value) => value
+                    }
+                }
+
+                fn is_low(&self) -> bool {
+                    match self.0.is_pin_low(PinFlag::$PX) {
+                        Err(Error::CouldNotAcquireDevice) => panic!("Could not read pin status. Could not acquire device."),
+                        Err(_) => panic!("Could not read pin status."),
+                        Ok(value) => value
+                    }
+                }
+            }
         )*
     }
 }
 
-output_pin_impl!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
-                 P10, P11, P12, P13, P14, P15, P16, P17 );
+io_pin_impl!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
+             P10, P11, P12, P13, P14, P15, P16, P17 );
 
 

@@ -103,7 +103,11 @@ where
     /// The mask of the pins to be read can be created with a combination of
     /// `PinFlag::P0` to `PinFlag::P17`.
     pub fn get(&mut self, mask: &PinFlag) -> Result<u16, Error<E>> {
-        let mut dev = self.acquire_device()?;
+        let dev = self.acquire_device()?;
+        Self::_get(dev, mask)
+    }
+
+    pub(crate) fn _get(mut dev: cell::RefMut<PCF8575Data<I2C>>, mask: &PinFlag) -> Result<u16, Error<E>> {
         let address = dev.address;
         let mask = mask.mask | dev.last_set_mask;
         // configure selected pins as inputs
@@ -116,6 +120,7 @@ where
             .read(address, &mut bits)
             .map_err(Error::I2C).and(Ok(u8_array_to_u16(bits)))
     }
+            
 
     /// Get the status of the selected I/O pins repeatedly and put them in the
     /// provided array.

@@ -28,6 +28,6 @@ embedded-hal-mock = "0.2"
 lto = true
 
 [features]
-default = []
+default = ["unproven"]
 std = []
 unproven = ["embedded-hal/unproven"]

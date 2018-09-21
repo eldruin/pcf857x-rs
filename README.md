@@ -8,7 +8,7 @@ This driver allows you to:
 - Read selected inputs.
 - Set all the outputs repeatedly looping through an array.
 - Read selected inputs repeatedly filling up an array.
-- Split the device into individual output pins.
+- Split the device into individual input/output pins.
 
 ## The devices
 The devices consist of 8 or 16 quasi-bidirectional ports, I²C-bus interface, three
