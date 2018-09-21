@@ -189,7 +189,7 @@ mod tests {
         assert_eq!(128 << 8, PinFlag::P17.mask);
     }
 
-    macro_rules! pcf8574_tests {
+    macro_rules! tests {
         ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
             mod $test_mod_name {
                 use super::*;
@@ -251,6 +251,6 @@ mod tests {
         }
     }
 
-    pcf8574_tests!(PCF8574,  pcf8574_tests,  0b010_0000);
-    pcf8574_tests!(PCF8574A, pcf8574a_tests, 0b011_1000);
+    tests!(PCF8574,  pcf8574_tests,  0b010_0000);
+    tests!(PCF8574A, pcf8574a_tests, 0b011_1000);
 }
