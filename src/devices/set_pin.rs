@@ -8,7 +8,7 @@ use super::super::{ Error, PCF8574, PCF8574A, PinFlag };
 use super::super::pins;
 
 
-macro_rules! set_pin_impl {
+macro_rules! pcf8574_set_pin_impl {
     ( $( $device_name:ident ),+ ) => {
         $(
             // The type is PinFlags everywhere and for compatibility
@@ -51,4 +51,4 @@ macro_rules! set_pin_impl {
     }
 }
 
-set_pin_impl!(PCF8574, PCF8574A);
+pcf8574_set_pin_impl!(PCF8574, PCF8574A);
