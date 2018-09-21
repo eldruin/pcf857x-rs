@@ -5,11 +5,23 @@ extern crate embedded_hal as hal;
 use hal::blocking::i2c::Write;
 pub use hal::digital::OutputPin;
 
+#[cfg(feature = "std")]
+use std::cell;
+
+#[cfg(not(feature = "std"))]
+use core::cell;
+
 use super::super::{ SlaveAddr, Error, PinFlag };
 
 /// PCF8575 device driver
 #[derive(Debug, Default)]
 pub struct PCF8575<I2C> {
+    /// Device
+    dev: cell::RefCell<PCF8575Data<I2C>>,
+}
+
+#[derive(Debug, Default)]
+pub(crate) struct PCF8575Data<I2C> {
     /// The concrete I²C device implementation.
     i2c: I2C,
     /// The I²C device address.
@@ -24,24 +36,29 @@ where
 {
     /// Create new instance of the PCF8575 device
     pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
-        PCF8575 {
+        let dev = PCF8575Data {
             i2c,
             address: address.addr(0b010_0000),
             last_set_mask: 0
+        };
+        PCF8575 {
+            dev: cell::RefCell::new(dev)
         }
     }
 
     /// Destroy driver instance, return I²C bus instance.
     pub fn destroy(self) -> I2C {
-        self.i2c
+        self.dev.into_inner().i2c
     }
 
     /// Set the status of all I/O pins.
     pub fn set(&mut self, bits: u16) -> Result<(), Error<E>> {
-        self.i2c
-            .write(self.address, &u16_to_u8_array(bits)[..])
+        let mut dev = self.acquire_device()?;
+        let address = dev.address;
+        dev.i2c
+            .write(address, &u16_to_u8_array(bits)[..])
             .map_err(Error::I2C)?;
-        self.last_set_mask = bits;
+        dev.last_set_mask = bits;
         Ok(())
     }
 
@@ -53,12 +70,18 @@ where
             if data.len() % 2 != 0 {
                 return Err(Error::InvalidInputData);
             }
-            self.i2c
-                .write(self.address, &data)
+            let mut dev = self.acquire_device()?;
+            let address = dev.address;
+            dev.i2c
+                .write(address, &data)
                 .map_err(Error::I2C)?;
-            self.last_set_mask = ((data[data.len()-1] as u16) << 8) | data[data.len()-2] as u16;
+            dev.last_set_mask = ((data[data.len()-1] as u16) << 8) | data[data.len()-2] as u16;
         }
         Ok(())
+    }
+
+    pub(crate) fn acquire_device(&self) -> Result<cell::RefMut<PCF8575Data<I2C>>, Error<E>> {
+        self.dev.try_borrow_mut().map_err(|_| Error::CouldNotAcquireDevice)
     }
 }
 
@@ -70,15 +93,17 @@ where
     /// The mask of the pins to be read can be created with a combination of
     /// `PinFlag::P0` to `PinFlag::P17`.
     pub fn get(&mut self, mask: &PinFlag) -> Result<u16, Error<E>> {
-        let mask = mask.mask | self.last_set_mask;
+        let mut dev = self.acquire_device()?;
+        let address = dev.address;
+        let mask = mask.mask | dev.last_set_mask;
         // configure selected pins as inputs
-        self.i2c
-            .write(self.address, &u16_to_u8_array(mask)[..])
+        dev.i2c
+            .write(address, &u16_to_u8_array(mask)[..])
             .map_err(Error::I2C)?;
 
         let mut bits = [0; 2];
-        self.i2c
-            .read(self.address, &mut bits)
+        dev.i2c
+            .read(address, &mut bits)
             .map_err(Error::I2C).and(Ok(u8_array_to_u16(bits)))
     }
 
@@ -93,14 +118,16 @@ where
             if data.len() % 2 != 0 {
                 return Err(Error::InvalidInputData);
             }
-            let mask = mask.mask | self.last_set_mask;
+            let mut dev = self.acquire_device()?;
+            let address = dev.address;
+            let mask = mask.mask | dev.last_set_mask;
             // configure selected pins as inputs
-            self.i2c
-                .write(self.address, &u16_to_u8_array(mask))
+            dev.i2c
+                .write(address, &u16_to_u8_array(mask))
                 .map_err(Error::I2C)?;
 
-            self.i2c
-                .read(self.address, &mut data)
+            dev.i2c
+                .read(address, &mut data)
                 .map_err(Error::I2C)?;
         }
         Ok(())
