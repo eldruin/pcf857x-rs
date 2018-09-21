@@ -61,7 +61,11 @@ macro_rules! pcf8574 {
 
             /// Set the status of all I/O pins.
             pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
-                let mut dev = self.acquire_device()?;
+                let dev = self.acquire_device()?;
+                Self::_set(dev, bits)
+            }
+
+            pub(crate) fn _set(mut dev: cell::RefMut<$device_data_name<I2C>>, bits: u8) -> Result<(), Error<E>> {
                 let address = dev.address;
                 dev.i2c
                     .write(address, &[bits])

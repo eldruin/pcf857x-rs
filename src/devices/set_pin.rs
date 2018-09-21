@@ -22,29 +22,15 @@ macro_rules! pcf8574_set_pin_impl {
                 I2C: Write<Error = E>
             {
                 fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
-                    let mut dev = self.acquire_device()?;
+                    let dev = self.acquire_device()?;
                     let new_mask = dev.last_set_mask | pin_flag.mask as u8;
-                    if dev.last_set_mask != new_mask {
-                        let address = dev.address;
-                        dev.i2c
-                            .write(address, &[new_mask])
-                            .map_err(Error::I2C)?;
-                        dev.last_set_mask = new_mask;
-                    }
-                    Ok(())
+                    Self::_set(dev, new_mask)
                 }
 
                 fn set_pin_low(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
-                    let mut dev = self.acquire_device()?;
+                    let dev = self.acquire_device()?;
                     let new_mask = dev.last_set_mask & !pin_flag.mask as u8;
-                    if dev.last_set_mask != new_mask {
-                        let address = dev.address;
-                        dev.i2c
-                            .write(address, &[new_mask])
-                            .map_err(Error::I2C)?;
-                        dev.last_set_mask = new_mask;
-                    }
-                    Ok(())
+                    Self::_set(dev, new_mask)
                 }
             }
         )*
