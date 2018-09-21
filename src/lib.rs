@@ -129,6 +129,7 @@ pub enum Error<E> {
 /// let pins_to_be_read = PinFlag::P0 | PinFlag::P1;
 /// ```
 /// Note that P10-17 can only be used with PCF8575 devices.
+#[derive(Debug, Clone)]
 pub struct PinFlag {
     mask: u16
 }
