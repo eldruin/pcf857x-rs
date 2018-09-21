@@ -11,6 +11,7 @@ use std::cell;
 #[cfg(not(feature = "std"))]
 use core::cell;
 
+use super::super::pins::pcf8575;
 use super::super::{ SlaveAddr, Error, PinFlag };
 
 /// PCF8575 device driver
@@ -78,6 +79,11 @@ where
             dev.last_set_mask = ((data[data.len()-1] as u16) << 8) | data[data.len()-2] as u16;
         }
         Ok(())
+    }
+
+    /// Split device into individual pins
+    pub fn split<'a>(&'a self) -> pcf8575::Parts<'a, PCF8575<I2C>, E> {
+        pcf8575::Parts::new(&self)
     }
 
     pub(crate) fn acquire_device(&self) -> Result<cell::RefMut<PCF8575Data<I2C>>, Error<E>> {

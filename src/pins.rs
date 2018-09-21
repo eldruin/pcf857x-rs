@@ -55,6 +55,12 @@ pub mod pcf8574 {
     parts!(p0, P0, p1, P1, p2, P2, p3, P3, p4, P4, p5, P5, p6, P6, p7, P7);
 }
 
+/// Module containing structures specific to PCF8575
+pub mod pcf8575 {
+    parts!(p0,  P0,  p1,  P1,  p2,  P2,  p3,  P3,  p4,  P4,  p5,  P5,  p6,  P6,  p7,  P7,
+           p10, P10, p11, P11, p12, P12, p13, P13, p14, P14, p15, P15, p16, P16, p17, P17);
+}
+
 /// Set a pin high or low
 pub trait SetPin<E> {
     /// Set a pin high
