@@ -208,7 +208,7 @@ impl SlaveAddr {
 }
 
 mod pins;
-pub use pins::{ pcf8574,
+pub use pins::{ pcf8574, pcf8575,
                  P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
                 P10, P11, P12, P13, P14, P15, P16, P17 };
 mod devices;

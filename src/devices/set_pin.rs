@@ -4,7 +4,8 @@
 extern crate embedded_hal as hal;
 use hal::blocking::i2c::Write;
 
-use super::super::{ Error, PCF8574, PCF8574A, PinFlag };
+use super::u16_to_u8_array;
+use super::super::{ Error, PCF8574, PCF8574A, PCF8575, PinFlag };
 use super::super::pins;
 
 
@@ -52,3 +53,35 @@ macro_rules! pcf8574_set_pin_impl {
 }
 
 pcf8574_set_pin_impl!(PCF8574, PCF8574A);
+
+
+impl<I2C, E> pins::SetPin<E> for PCF8575<I2C>
+where
+    I2C: Write<Error = E>
+{
+    fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
+        let mut dev = self.acquire_device()?;
+        let new_mask = dev.last_set_mask | pin_flag.mask;
+        if dev.last_set_mask != new_mask {
+            let address = dev.address;
+            dev.i2c
+                .write(address, &u16_to_u8_array(new_mask)[..])
+                .map_err(Error::I2C)?;
+            dev.last_set_mask = new_mask;
+        }
+        Ok(())
+    }
+
+    fn set_pin_low(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
+        let mut dev = self.acquire_device()?;
+        let new_mask = dev.last_set_mask & !pin_flag.mask;
+        if dev.last_set_mask != new_mask {
+            let address = dev.address;
+            dev.i2c
+                .write(address, &u16_to_u8_array(new_mask)[..])
+                .map_err(Error::I2C)?;
+            dev.last_set_mask = new_mask;
+        }
+        Ok(())
+    }
+}

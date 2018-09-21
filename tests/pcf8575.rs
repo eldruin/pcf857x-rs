@@ -1,6 +1,6 @@
 extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{PCF8575, SlaveAddr, Error, PinFlag};
+use pcf857x::{PCF8575, SlaveAddr, Error, PinFlag, OutputPin};
 
 fn setup<'a>(data: &'a[u8]) -> PCF8575<hal::I2cMock<'a>> {
     let mut dev = hal::I2cMock::new();
@@ -66,3 +66,49 @@ fn read_multiple_words_with_odd_size_array_returns_error() {
         _ => panic!()
     }
 }
+
+macro_rules! pin_test {
+    ($px:ident, $value:expr) => {
+        mod $px {
+            use super::*;
+            #[test]
+            fn can_split_and_set_high() {
+                let expander = setup(&[0]);
+                {
+                  let mut parts = expander.split();
+                  parts.$px.set_high();
+                }
+                check_sent_data(expander, &u16_to_u8_array($value)[..]);
+            }
+
+            #[test]
+            fn can_split_and_set_low() {
+                let mut expander = setup(&[0]);
+                expander.set(0b1111_1111_1111_1111).unwrap();
+                {
+                  let mut parts = expander.split();
+                  parts.$px.set_low();
+                }
+                let data = 0b1111_1111_1111_1111 & !$value;
+                check_sent_data(expander, &u16_to_u8_array(data)[..]);
+            }
+        }
+    }
+}
+
+pin_test!(p0,      1);
+pin_test!(p1,      2);
+pin_test!(p2,      4);
+pin_test!(p3,      8);
+pin_test!(p4,     16);
+pin_test!(p5,     32);
+pin_test!(p6,     64);
+pin_test!(p7,    128);
+pin_test!(p10,   256);
+pin_test!(p11,   512);
+pin_test!(p12,  1024);
+pin_test!(p13,  2048);
+pin_test!(p14,  4096);
+pin_test!(p15,  8192);
+pin_test!(p16, 16384);
+pin_test!(p17, 32768);

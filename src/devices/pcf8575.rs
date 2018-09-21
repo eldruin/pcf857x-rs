@@ -25,11 +25,11 @@ pub struct PCF8575<I2C> {
 #[derive(Debug, Default)]
 pub(crate) struct PCF8575Data<I2C> {
     /// The concrete I²C device implementation.
-    i2c: I2C,
+    pub(crate) i2c: I2C,
     /// The I²C device address.
-    address: u8,
+    pub(crate) address: u8,
     /// Last status set to output pins, used to conserve its status while doing a read.
-    last_set_mask: u16,
+    pub(crate) last_set_mask: u16,
 }
 
 impl<I2C, E> PCF8575<I2C>
