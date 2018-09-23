@@ -106,7 +106,7 @@
 
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate embedded_hal as hal;
 pub use hal::digital::OutputPin;
