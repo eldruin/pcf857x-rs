@@ -160,43 +160,6 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn can_get_default_address() {
-        let addr = SlaveAddr::default();
-        assert_eq!(0b010_0000, addr.addr(0b010_0000));
-    }
-
-    #[test]
-    fn can_generate_alternative_addresses() {
-        let default = 0b010_0000;
-        assert_eq!(0b010_0000, SlaveAddr::Alternative(false, false, false).addr(default));
-        assert_eq!(0b010_0001, SlaveAddr::Alternative(false, false,  true).addr(default));
-        assert_eq!(0b010_0010, SlaveAddr::Alternative(false,  true, false).addr(default));
-        assert_eq!(0b010_0100, SlaveAddr::Alternative( true, false, false).addr(default));
-        assert_eq!(0b010_0111, SlaveAddr::Alternative( true,  true,  true).addr(default));
-    }
-
-    #[test]
-    fn pin_flags_are_correct() {
-        assert_eq!(1,   PinFlag::P0.mask);
-        assert_eq!(2,   PinFlag::P1.mask);
-        assert_eq!(4,   PinFlag::P2.mask);
-        assert_eq!(8,   PinFlag::P3.mask);
-        assert_eq!(16,  PinFlag::P4.mask);
-        assert_eq!(32,  PinFlag::P5.mask);
-        assert_eq!(64,  PinFlag::P6.mask);
-        assert_eq!(128, PinFlag::P7.mask);
-
-        assert_eq!(1 << 8,   PinFlag::P10.mask);
-        assert_eq!(2 << 8,   PinFlag::P11.mask);
-        assert_eq!(4 << 8,   PinFlag::P12.mask);
-        assert_eq!(8 << 8,   PinFlag::P13.mask);
-        assert_eq!(16 << 8,  PinFlag::P14.mask);
-        assert_eq!(32 << 8,  PinFlag::P15.mask);
-        assert_eq!(64 << 8,  PinFlag::P16.mask);
-        assert_eq!(128 << 8, PinFlag::P17.mask);
-    }
-
     macro_rules! tests {
         ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
             mod $test_mod_name {
