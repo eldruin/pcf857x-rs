@@ -72,6 +72,9 @@ macro_rules! pin_test {
         mod $px {
             use super::*;
             use pcf857x::OutputPin;
+            #[cfg(feature = "unproven")]
+            use pcf857x::InputPin;
+
             #[test]
             fn can_split_and_set_high() {
                 let expander = setup(&[0]);
@@ -92,6 +95,30 @@ macro_rules! pin_test {
                 }
                 let data = 0b1111_1111_1111_1111 & !$value;
                 check_sent_data(expander, &u16_to_u8_array(data)[..]);
+            }
+
+            #[cfg(feature = "unproven")]
+            #[test]
+            fn can_split_and_get_is_high() {
+                let input = u16_to_u8_array($value);
+                let expander = setup(&input);
+                {
+                  let parts = expander.split();
+                  assert!(parts.$px.is_high());
+                }
+                check_sent_data(expander, &u16_to_u8_array($value)[..]);
+            }
+
+            #[cfg(feature = "unproven")]
+            #[test]
+            fn can_split_and_get_is_low() {
+                let input = u16_to_u8_array(!$value);
+                let expander = setup(&input);
+                {
+                  let parts = expander.split();
+                  assert!(parts.$px.is_low());
+                }
+                check_sent_data(expander, &u16_to_u8_array($value)[..]);
             }
         }
     }
