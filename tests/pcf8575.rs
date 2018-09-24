@@ -1,6 +1,6 @@
 extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{PCF8575, SlaveAddr, Error, PinFlag, OutputPin};
+use pcf857x::{PCF8575, SlaveAddr, Error, PinFlag};
 
 fn setup<'a>(data: &'a[u8]) -> PCF8575<hal::I2cMock<'a>> {
     let mut dev = hal::I2cMock::new();
@@ -71,6 +71,7 @@ macro_rules! pin_test {
     ($px:ident, $value:expr) => {
         mod $px {
             use super::*;
+            use pcf857x::OutputPin;
             #[test]
             fn can_split_and_set_high() {
                 let expander = setup(&[0]);

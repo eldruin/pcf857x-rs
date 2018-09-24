@@ -1,13 +1,12 @@
 extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{PCF8574, PCF8574A, SlaveAddr, PinFlag, Error, OutputPin};
-#[cfg(feature = "unproven")]
-use pcf857x::InputPin;
+use pcf857x::{PCF8574, PCF8574A, SlaveAddr, PinFlag, Error};
 
 macro_rules! pcf8574_tests {
     ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
         mod $test_mod_name {
             use super::*;
+            
             fn setup<'a>(data: &'a[u8]) -> $device_name<hal::I2cMock<'a>> {
                 let mut dev = hal::I2cMock::new();
                 dev.set_read_data(&data);
@@ -94,6 +93,10 @@ macro_rules! pcf8574_pin_test {
     ($px:ident, $value:expr) => {
         mod $px {
             use super::*;
+            use pcf857x::OutputPin;
+            #[cfg(feature = "unproven")]
+            use pcf857x::InputPin;
+
             #[test]
             fn can_split_and_set_high() {
                 let expander = setup(&[0]);
