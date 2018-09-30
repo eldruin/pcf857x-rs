@@ -18,7 +18,7 @@ include = [
 ]
 
 [dependencies]
-embedded-hal = "0.2"
+embedded-hal = { git = "https://github.com/eldruin/embedded-hal", branch = "fallible_pin_traits", features = ["use-fallible-digital-traits"]}
 
 [dev-dependencies]
 linux-embedded-hal = "0.2"

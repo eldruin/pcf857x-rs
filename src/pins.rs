@@ -85,42 +85,28 @@ macro_rules! io_pin_impl {
         $(
             impl<'a, S, E> OutputPin for $PX<'a, S, E>
             where S: SetPin<E> {
+                type Error = Error<E>;
 
-                fn set_high(&mut self) {
-                    match self.0.set_pin_high(PinFlag::$PX) {
-                        Err(Error::CouldNotAcquireDevice) => panic!("Could not set pin to high. Could not acquire device."),
-                        Err(_) => panic!("Could not set pin to high."),
-                        _ => ()
-                    }
+                fn set_high(&mut self) -> Result<(), Self::Error> {
+                    self.0.set_pin_high(PinFlag::$PX)
                 }
 
-                fn set_low(&mut self) {
-                    match self.0.set_pin_low(PinFlag::$PX) {
-                        Err(Error::CouldNotAcquireDevice) => panic!("Could not set pin to high. Could not acquire device."),
-                        Err(_) => panic!("Could not set pin to high."),
-                        _ => ()
-                    }
+                fn set_low(&mut self) -> Result<(), Self::Error> {
+                    self.0.set_pin_low(PinFlag::$PX)
                 }
             }
 
             #[cfg(feature = "unproven")]
             impl<'a, S, E> InputPin for $PX<'a, S, E>
             where S: GetPin<E> {
+                type Error = Error<E>;
 
-                fn is_high(&self) -> bool {
-                    match self.0.is_pin_high(PinFlag::$PX) {
-                        Err(Error::CouldNotAcquireDevice) => panic!("Could not read pin status. Could not acquire device."),
-                        Err(_) => panic!("Could not read pin status."),
-                        Ok(value) => value
-                    }
+                fn is_high(&self) -> Result<bool, Self::Error> {
+                    self.0.is_pin_high(PinFlag::$PX)
                 }
 
-                fn is_low(&self) -> bool {
-                    match self.0.is_pin_low(PinFlag::$PX) {
-                        Err(Error::CouldNotAcquireDevice) => panic!("Could not read pin status. Could not acquire device."),
-                        Err(_) => panic!("Could not read pin status."),
-                        Ok(value) => value
-                    }
+                fn is_low(&self) -> Result<bool, Self::Error> {
+                    self.0.is_pin_low(PinFlag::$PX)
                 }
             }
         )*
