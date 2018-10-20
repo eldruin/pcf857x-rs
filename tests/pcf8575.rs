@@ -1,20 +1,20 @@
 extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{PCF8575, SlaveAddr, Error, PinFlag};
+use pcf857x::{ Pcf8575, SlaveAddr, Error, PinFlag };
 
-fn setup<'a>(data: &'a[u8]) -> PCF8575<hal::I2cMock<'a>> {
+fn setup<'a>(data: &'a[u8]) -> Pcf8575<hal::I2cMock<'a>> {
     let mut dev = hal::I2cMock::new();
     dev.set_read_data(&data);
-    PCF8575::new(dev, SlaveAddr::default())
+    Pcf8575::new(dev, SlaveAddr::default())
 }
 
-fn check_sent_data(expander: PCF8575<hal::I2cMock>, data: &[u8]) {
+fn check_sent_data(expander: Pcf8575<hal::I2cMock>, data: &[u8]) {
     let dev = expander.destroy();
     assert_eq!(dev.get_last_address(), Some(0b010_0000));
     assert_eq!(dev.get_write_data(), &data[..]);
 }
 
-fn check_nothing_was_sent(expander: PCF8575<hal::I2cMock>) {
+fn check_nothing_was_sent(expander: Pcf8575<hal::I2cMock>) {
     let dev = expander.destroy();
     assert!(dev.get_last_address().is_none());
     assert!(dev.get_write_data().is_empty());

@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-...
+### Added
+- Added method to split a device into structs representing the individual pins
+  implementing the `InputPin` and `OutputPin` traits so that it is possible
+  to use them transparently as if they were normal I/O pins.
+
+### Changed
+- [breaking-change] Renamed PCF8574 -> Pcf8574, PCF8574A -> Pcf8574a and
+  PCF8575 -> Pcf8575 to comply with the Rust naming conventions.
 
 ## 0.1.0 - 2018-08-22
 

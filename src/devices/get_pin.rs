@@ -4,7 +4,7 @@
 extern crate embedded_hal as hal;
 use hal::blocking::i2c::Write;
 
-use super::super::{ Error, PCF8574, PCF8574A, PCF8575, PinFlag };
+use super::super::{ Error, Pcf8574, Pcf8574a, Pcf8575, PinFlag };
 use super::super::pins;
 
 
@@ -37,10 +37,10 @@ macro_rules! pcf8574_get_pin_impl {
     }
 }
 
-pcf8574_get_pin_impl!(PCF8574, PCF8574A);
+pcf8574_get_pin_impl!(Pcf8574, Pcf8574a);
 
 
-impl<I2C, E> pins::GetPin<E> for PCF8575<I2C>
+impl<I2C, E> pins::GetPin<E> for Pcf8575<I2C>
 where
     I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
 {

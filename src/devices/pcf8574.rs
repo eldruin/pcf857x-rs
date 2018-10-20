@@ -150,8 +150,8 @@ macro_rules! pcf8574 {
     };
 }
 
-pcf8574!(PCF8574,  PCF8574Data,  0b010_0000);
-pcf8574!(PCF8574A, PCF8574AData, 0b011_1000);
+pcf8574!(Pcf8574,  Pcf8574Data,  0b010_0000);
+pcf8574!(Pcf8574a, Pcf8574aData, 0b011_1000);
 
 
 #[cfg(test)]
@@ -222,6 +222,6 @@ mod tests {
         }
     }
 
-    tests!(PCF8574,  pcf8574_tests,  0b010_0000);
-    tests!(PCF8574A, pcf8574a_tests, 0b011_1000);
+    tests!(Pcf8574,  pcf8574_tests,  0b010_0000);
+    tests!(Pcf8574a, pcf8574a_tests, 0b011_1000);
 }

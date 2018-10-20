@@ -1,6 +1,6 @@
 extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{PCF8574, PCF8574A, SlaveAddr, PinFlag, Error};
+use pcf857x::{ Pcf8574, Pcf8574a, SlaveAddr, PinFlag, Error };
 
 macro_rules! pcf8574_tests {
     ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
@@ -143,5 +143,5 @@ macro_rules! pcf8574_pin_test {
     }
 }
 
-pcf8574_tests!(PCF8574,  pcf8574_tests,  0b010_0000);
-pcf8574_tests!(PCF8574A, pcf8574a_tests, 0b011_1000);
+pcf8574_tests!(Pcf8574,  pcf8574_tests,  0b010_0000);
+pcf8574_tests!(Pcf8574a, pcf8574a_tests, 0b011_1000);

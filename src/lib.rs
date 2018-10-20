@@ -36,12 +36,12 @@
 //! extern crate pcf857x;
 //!
 //! use hal::I2cdev;
-//! use pcf857x::{PCF8574, SlaveAddr};
+//! use pcf857x::{ Pcf8574, SlaveAddr };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
-//! let mut expander = PCF8574::new(dev, address);
+//! let mut expander = Pcf8574::new(dev, address);
 //! # }
 //! ```
 //!
@@ -52,13 +52,13 @@
 //! extern crate pcf857x;
 //!
 //! use hal::I2cdev;
-//! use pcf857x::{PCF8574, SlaveAddr};
+//! use pcf857x::{ Pcf8574, SlaveAddr };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let (a2, a1, a0) = (false, false, true);
 //! let address = SlaveAddr::Alternative(a2, a1, a0);
-//! let mut expander = PCF8574::new(dev, address);
+//! let mut expander = Pcf8574::new(dev, address);
 //! # }
 //! ```
 //!
@@ -69,12 +69,12 @@
 //! extern crate pcf857x;
 //!
 //! use hal::I2cdev;
-//! use pcf857x::{PCF8574, SlaveAddr, PinFlag};
+//! use pcf857x::{ Pcf8574, SlaveAddr, PinFlag };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
-//! let mut expander = PCF8574::new(dev, address);
+//! let mut expander = Pcf8574::new(dev, address);
 //! let output_pin_status = 0b1010_1010;
 //! expander.set(output_pin_status).unwrap();
 //!
@@ -85,19 +85,19 @@
 //! # }
 //! ```
 //!
-//! ### Splitting device into individual output pins and setting them.
+//! ### Splitting device into individual input/output pins and setting them.
 //!
 //! ```no_run
 //! extern crate linux_embedded_hal as hal;
 //! extern crate pcf857x;
 //!
 //! use hal::I2cdev;
-//! use pcf857x::{PCF8574, SlaveAddr, PinFlag, OutputPin};
+//! use pcf857x::{ Pcf8574, SlaveAddr, PinFlag, OutputPin };
 //!
 //! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
-//! let expander = PCF8574::new(dev, address);
+//! let expander = Pcf8574::new(dev, address);
 //! let mut parts = expander.split();
 //! parts.p0.set_high();
 //! parts.p7.set_low();
@@ -215,8 +215,8 @@ pub use pins::{ pcf8574, pcf8575,
                  P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
                 P10, P11, P12, P13, P14, P15, P16, P17 };
 mod devices;
-pub use devices::pcf8574::{ PCF8574, PCF8574A };
-pub use devices::pcf8575::PCF8575;
+pub use devices::pcf8574::{ Pcf8574, Pcf8574a };
+pub use devices::pcf8575::Pcf8575;
 
 
 #[cfg(test)]
