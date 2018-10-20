@@ -172,7 +172,10 @@ impl PinFlag {
     pub const P17 :  PinFlag = PinFlag { mask: 32768 };
 }
 
+#[cfg(not(feature= "std"))]
 use core::ops::BitOr;
+#[cfg(feature= "std")]
+use std::ops::BitOr;
 
 impl BitOr for PinFlag {
     type Output = Self;
