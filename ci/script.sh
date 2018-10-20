@@ -6,14 +6,18 @@ main() {
         sed -i "s/embedded-hal-mock/#embedded-hal-mock/g" Cargo.toml
     fi
 
-    cargo check --target $TARGET
-    cargo build --target $TARGET --release
+    if [ -z $FEATURES ]; then
+       export FEATURES="--features $FEATURES"
+    fi
+
+    cargo check --target $TARGET $FEATURES
+    cargo build --target $TARGET --release $FEATURES
     if [ -z $DISABLE_EXAMPLES ] && [[ $TARGET =~ .*linux.* ]]; then
-        cargo build --target $TARGET --examples
+        cargo build --target $TARGET $FEATURES --examples
     fi
 
     if [ -z $DISABLE_TESTS ] && [ $TRAVIS_RUST_VERSION = nightly ] && [[ $TARGET =~ .*linux.* ]]; then
-        cargo test --target $TARGET
+        cargo test --target $TARGET $FEATURES
     fi
 }
 
