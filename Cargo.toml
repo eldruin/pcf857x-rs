@@ -8,6 +8,8 @@ description = "Platform-agnostic Rust driver for the PCF8574, PCF8574A and PCF85
 readme = "README.md"
 keywords = ["io", "expander", "i2c", "driver", "embedded-hal-driver"]
 categories = ["embedded", "hardware-support", "no-std"]
+homepage = "https://github.com/eldruin/pcf857x-rs"
+documentation = "https://docs.rs/pcf857x"
 include = [
     "**/*.rs",
     "Cargo.toml",
@@ -16,6 +18,11 @@ include = [
     "LICENSE-MIT",
     "LICENSE-APACHE",
 ]
+
+
+[badges.travis-ci]
+branch = "master"
+repository = "eldruin/pcf857x-rs"
 
 [dependencies]
 embedded-hal = "0.2"
