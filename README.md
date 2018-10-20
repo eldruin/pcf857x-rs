@@ -4,11 +4,11 @@ This is a platform agnostic Rust driver for the PCF8574, PCF8574A and PCF8575 I/
 based on the [`embedded-hal`](https://github.com/rust-embedded/embedded-hal) traits.
 
 This driver allows you to:
-- Set all the outputs to `0` or `1` at once.
-- Read selected inputs.
-- Set all the outputs repeatedly looping through an array.
-- Read selected inputs repeatedly filling up an array.
-- Split the device into individual input/output pins.
+- Set all the outputs to `0` or `1` at once. See `set()`.
+- Read selected inputs. See `get()`.
+- Set all the outputs repeatedly looping through an array. See `write_array()`.
+- Read selected inputs repeatedly filling up an array. See `read_array()`.
+- Split the device into individual input/output pins. See `split()`.
 
 ## The devices
 The devices consist of 8 or 16 quasi-bidirectional ports, I²C-bus interface, three

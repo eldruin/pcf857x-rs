@@ -4,11 +4,11 @@
 //! [`embedded-hal`]: https://github.com/rust-embedded/embedded-hal
 //!
 //! This driver allows you to:
-//! - Set all the outputs to `0` or `1` at once.
-//! - Read selected inputs.
-//! - Set all the outputs repeatedly looping through an array.
-//! - Read selected inputs repeatedly filling up an array.
-//! - Split the device into individual input/output pins.
+//! - Set all the outputs to `0` or `1` at once. See `set()`.
+//! - Read selected inputs. See `get()`.
+//! - Set all the outputs repeatedly looping through an array. See `write_array()`.
+//! - Read selected inputs repeatedly filling up an array. See `read_array()`.
+//! - Split the device into individual input/output pins. See `split()`.
 //!
 //! ## The devices
 //! The devices consist of 8 or 16 quasi-bidirectional ports, I²C-bus interface, three
@@ -23,7 +23,7 @@
 //! Datasheets:
 //! - [PCF8574 / PCF8574A](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
 //! - [PCF8575](https://www.nxp.com/documents/data_sheet/PCF8575.pdf)
-//!
+//! 
 //! ## Splitting the device into individual input/output pins
 //!
 //! By calling `split()` on the device it is possible to get a structure holding the
