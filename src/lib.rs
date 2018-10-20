@@ -24,6 +24,27 @@
 //! - [PCF8574 / PCF8574A](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
 //! - [PCF8575](https://www.nxp.com/documents/data_sheet/PCF8575.pdf)
 //!
+//! ## Splitting the device into individual input/output pins
+//!
+//! By calling `split()` on the device it is possible to get a structure holding the
+//! individual pins as separate elements. These pins implement the `OutputPin` and
+//! `InputPin` traits (the latter only if activating the `unproven` feature).
+//! This way it is possible to use the pins transparently as normal I/O pins regardless
+//! of the fact that an I/O expander is connected in between.
+//! You can therefore also pass them to code expecting an `OutputPin` or `InputPin`.
+//!
+//! However, you need to keep the device you split alive (lifetime annotations have
+//! put in place for Rust to enforce this).
+//!
+//! For each operation done on an input/output pin, a `read` or `write` will be done
+//! through I2C for all the pins, using a cached value for the rest of pins not being
+//! operated on. This should all be transparent to the user but if operating on more
+//! than one pin at once, the `set` and `get` methods will be faster.
+//! Similarly, if several pins must be changed/read at the same time, the `set` and
+//! `get` methods would be the correct choice.
+//!
+//! At the moment, no mutex has been implemented for the individual pin access.
+//!
 //! ## Usage examples (see also examples folder)
 //!
 //! ### Instantiating with the default address
@@ -103,6 +124,33 @@
 //! parts.p7.set_low();
 //! # }
 //! ```
+//!
+//! ### Splitting device into individual input/output pins and reading them.
+//!
+//! Only available if compiling with the "`unproven`" feature
+//!
+//! ```no_run
+//! extern crate linux_embedded_hal as hal;
+//! extern crate pcf857x;
+//!
+//! use hal::I2cdev;
+//! use pcf857x::{ Pcf8574, SlaveAddr, PinFlag };
+//! #[cfg(feature="unproven")]
+//! use pcf857x::InputPin;
+//!
+//! # fn main() {
+//! let dev = I2cdev::new("/dev/i2c-1").unwrap();
+//! let address = SlaveAddr::default();
+//! let expander = Pcf8574::new(dev, address);
+//! let mut parts = expander.split();
+//! #[cfg(feature="unproven")]
+//! {
+//!     let is_input_p0_low = parts.p0.is_low();
+//!     let is_input_p2_low = parts.p2.is_low();
+//! }
+//! # }
+//! ```
+
 
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
