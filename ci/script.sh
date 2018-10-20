@@ -6,7 +6,7 @@ main() {
         sed -i "s/embedded-hal-mock/#embedded-hal-mock/g" Cargo.toml
     fi
 
-    if [ -z $FEATURES ]; then
+    if [ ! -z $FEATURES ]; then
        export FEATURES="--features $FEATURES"
     fi
 
