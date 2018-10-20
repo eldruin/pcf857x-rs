@@ -1,6 +1,6 @@
 # Rust PCF857x I/O Expanders Driver [![crates.io](https://img.shields.io/crates/v/pcf857x.svg)](https://crates.io/crates/pcf857x) [![Docs](https://docs.rs/pcf857x/badge.svg)](https://docs.rs/pcf857x) [![Build Status](https://travis-ci.org/eldruin/pcf857x-rs.svg?branch=master)](https://travis-ci.org/eldruin/pcf857x-rs)
 
-This is a platform agnostic Rust driver for the PCF8574, PCF8574A and PCF8575 I/O expanders,
+This is a platform agnostic Rust driver for the PCF8574, PCF8574A and PCF8575 I2C I/O expanders,
 based on the [`embedded-hal`](https://github.com/rust-embedded/embedded-hal) traits.
 
 This driver allows you to:
