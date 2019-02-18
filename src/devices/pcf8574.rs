@@ -12,8 +12,7 @@ use std::cell;
 use core::cell;
 
 use super::super::pins::pcf8574;
-use super::super::{ SlaveAddr, Error, PinFlag };
-
+use super::super::{Error, PinFlag, SlaveAddr};
 
 macro_rules! pcf8574 {
     ( $device_name:ident, $device_data_name:ident, $default_address:expr ) => {
@@ -21,7 +20,7 @@ macro_rules! pcf8574 {
         #[derive(Debug, Default)]
         pub struct $device_name<I2C> {
             /// Data
-            pub(crate) data: cell::RefCell<$device_data_name<I2C>>
+            pub(crate) data: cell::RefCell<$device_data_name<I2C>>,
         }
 
         #[derive(Debug, Default)]
@@ -36,17 +35,17 @@ macro_rules! pcf8574 {
 
         impl<I2C, E> $device_name<I2C>
         where
-            I2C: Write<Error = E>
+            I2C: Write<Error = E>,
         {
             /// Create new instance of the device
             pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
                 let data = $device_data_name {
                     i2c,
                     address: address.addr($default_address),
-                    last_set_mask: 0
+                    last_set_mask: 0,
                 };
                 $device_name {
-                    data: cell::RefCell::new(data)
+                    data: cell::RefCell::new(data),
                 }
             }
 
@@ -55,8 +54,12 @@ macro_rules! pcf8574 {
                 self.data.into_inner().i2c
             }
 
-            pub(crate) fn acquire_device(&self) -> Result<cell::RefMut<$device_data_name<I2C>>, Error<E>> {
-                self.data.try_borrow_mut().map_err(|_| Error::CouldNotAcquireDevice)
+            pub(crate) fn acquire_device(
+                &self,
+            ) -> Result<cell::RefMut<$device_data_name<I2C>>, Error<E>> {
+                self.data
+                    .try_borrow_mut()
+                    .map_err(|_| Error::CouldNotAcquireDevice)
             }
 
             /// Set the status of all I/O pins.
@@ -65,11 +68,12 @@ macro_rules! pcf8574 {
                 Self::_set(dev, bits)
             }
 
-            pub(crate) fn _set(mut dev: cell::RefMut<$device_data_name<I2C>>, bits: u8) -> Result<(), Error<E>> {
+            pub(crate) fn _set(
+                mut dev: cell::RefMut<$device_data_name<I2C>>,
+                bits: u8,
+            ) -> Result<(), Error<E>> {
                 let address = dev.address;
-                dev.i2c
-                    .write(address, &[bits])
-                    .map_err(Error::I2C)?;
+                dev.i2c.write(address, &[bits]).map_err(Error::I2C)?;
                 dev.last_set_mask = bits;
                 Ok(())
             }
@@ -79,9 +83,7 @@ macro_rules! pcf8574 {
                 if let Some(last) = data.last() {
                     let mut dev = self.acquire_device()?;
                     let address = dev.address;
-                    dev.i2c
-                        .write(address, &data)
-                        .map_err(Error::I2C)?;
+                    dev.i2c.write(address, &data).map_err(Error::I2C)?;
                     dev.last_set_mask = *last;
                 }
                 Ok(())
@@ -95,7 +97,7 @@ macro_rules! pcf8574 {
 
         impl<I2C, E> $device_name<I2C>
         where
-            I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
+            I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>,
         {
             /// Get the status of the selected I/O pins.
             /// The mask of the pins to be read can be created with a combination of
@@ -108,51 +110,51 @@ macro_rules! pcf8574 {
                 Self::_get(dev, mask)
             }
 
-            pub(crate) fn _get(mut dev: cell::RefMut<$device_data_name<I2C>>, mask: &PinFlag) -> Result<u8, Error<E>> {
+            pub(crate) fn _get(
+                mut dev: cell::RefMut<$device_data_name<I2C>>,
+                mask: &PinFlag,
+            ) -> Result<u8, Error<E>> {
                 let mask = mask.mask as u8 | dev.last_set_mask;
                 let address = dev.address;
                 // configure selected pins as inputs
-                dev.i2c
-                    .write(address, &[mask])
-                    .map_err(Error::I2C)?;
+                dev.i2c.write(address, &[mask]).map_err(Error::I2C)?;
 
                 let mut bits = [0];
                 dev.i2c
                     .read(address, &mut bits)
-                    .map_err(Error::I2C).and(Ok(bits[0]))
+                    .map_err(Error::I2C)
+                    .and(Ok(bits[0]))
             }
 
             /// Get the status of the selected I/O pins repeatedly and put them in the
             /// provided array.
             /// The mask of the pins to be read can be created with a combination of
             /// `PinFlag::P0` to `PinFlag::P7`.
-            pub fn read_array(&mut self, mask: &PinFlag, mut data: &mut [u8]) -> Result<(), Error<E>> {
+            pub fn read_array(
+                &mut self,
+                mask: &PinFlag,
+                mut data: &mut [u8],
+            ) -> Result<(), Error<E>> {
                 if !data.is_empty() {
                     if (mask.mask >> 8) != 0 {
-                       return Err(Error::InvalidInputData);
+                        return Err(Error::InvalidInputData);
                     }
                     let mut dev = self.acquire_device()?;
                     let mask = mask.mask as u8 | dev.last_set_mask;
                     let address = dev.address;
                     // configure selected pins as inputs
-                    dev.i2c
-                        .write(address, &[mask])
-                        .map_err(Error::I2C)?;
+                    dev.i2c.write(address, &[mask]).map_err(Error::I2C)?;
 
-                    dev.i2c
-                        .read(address, &mut data)
-                        .map_err(Error::I2C)?;
+                    dev.i2c.read(address, &mut data).map_err(Error::I2C)?;
                 }
                 Ok(())
             }
         }
-
     };
 }
 
 pcf8574!(Pcf8574,  Pcf8574Data,  0b010_0000);
 pcf8574!(Pcf8574a, Pcf8574aData, 0b011_1000);
-
 
 #[cfg(test)]
 mod tests {
@@ -164,7 +166,7 @@ mod tests {
         ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
             mod $test_mod_name {
                 use super::*;
-                fn setup<'a>(data: &'a[u8]) -> $device_name<hal::I2cMock<'a>> {
+                fn setup<'a>(data: &'a [u8]) -> $device_name<hal::I2cMock<'a>> {
                     let mut dev = hal::I2cMock::new();
                     dev.set_read_data(&data);
                     $device_name::new(dev, SlaveAddr::default())
@@ -206,7 +208,6 @@ mod tests {
                     assert_eq!([0xAB, 0xCD], data);
                 }
 
-
                 #[test]
                 fn reading_multiple_words_conserves_high_pins() {
                     let mut expander = setup(&[0xAB, 0xCD]);
@@ -219,7 +220,7 @@ mod tests {
                     assert_eq!([0xAB, 0xCD], read_data);
                 }
             }
-        }
+        };
     }
 
     tests!(Pcf8574,  pcf8574_tests,  0b010_0000);

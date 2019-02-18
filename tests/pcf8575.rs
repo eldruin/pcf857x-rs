@@ -1,8 +1,8 @@
-extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{ Pcf8575, SlaveAddr, Error, PinFlag };
+extern crate pcf857x;
+use pcf857x::{Error, Pcf8575, PinFlag, SlaveAddr};
 
-fn setup<'a>(data: &'a[u8]) -> Pcf8575<hal::I2cMock<'a>> {
+fn setup<'a>(data: &'a [u8]) -> Pcf8575<hal::I2cMock<'a>> {
     let mut dev = hal::I2cMock::new();
     dev.set_read_data(&data);
     Pcf8575::new(dev, SlaveAddr::default())
@@ -52,18 +52,18 @@ fn write_array_with_odd_word_count_returns_error() {
     let mut expander = setup(&[0]);
     match expander.write_array(&[0]) {
         Err(Error::InvalidInputData) => (),
-        _ => panic!()
+        _ => panic!(),
     }
 }
 
- #[test]
+#[test]
 fn read_multiple_words_with_odd_size_array_returns_error() {
     let mut data = [0; 3];
     let mut expander = setup(&[0xAB, 0xCD]);
     let mask = PinFlag::P0 | PinFlag::P17;
     match expander.read_array(&mask, &mut data) {
         Err(Error::InvalidInputData) => (),
-        _ => panic!()
+        _ => panic!(),
     }
 }
 
@@ -71,16 +71,16 @@ macro_rules! pin_test {
     ($px:ident, $value:expr) => {
         mod $px {
             use super::*;
-            use pcf857x::OutputPin;
             #[cfg(feature = "unproven")]
             use pcf857x::InputPin;
+            use pcf857x::OutputPin;
 
             #[test]
             fn can_split_and_set_high() {
                 let expander = setup(&[0]);
                 {
-                  let mut parts = expander.split();
-                  parts.$px.set_high();
+                    let mut parts = expander.split();
+                    parts.$px.set_high();
                 }
                 check_sent_data(expander, &u16_to_u8_array($value)[..]);
             }
@@ -90,8 +90,8 @@ macro_rules! pin_test {
                 let mut expander = setup(&[0]);
                 expander.set(0b1111_1111_1111_1111).unwrap();
                 {
-                  let mut parts = expander.split();
-                  parts.$px.set_low();
+                    let mut parts = expander.split();
+                    parts.$px.set_low();
                 }
                 let data = 0b1111_1111_1111_1111 & !$value;
                 check_sent_data(expander, &u16_to_u8_array(data)[..]);
@@ -103,8 +103,8 @@ macro_rules! pin_test {
                 let input = u16_to_u8_array($value);
                 let expander = setup(&input);
                 {
-                  let parts = expander.split();
-                  assert!(parts.$px.is_high());
+                    let parts = expander.split();
+                    assert!(parts.$px.is_high());
                 }
                 check_sent_data(expander, &u16_to_u8_array($value)[..]);
             }
@@ -115,13 +115,13 @@ macro_rules! pin_test {
                 let input = u16_to_u8_array(!$value);
                 let expander = setup(&input);
                 {
-                  let parts = expander.split();
-                  assert!(parts.$px.is_low());
+                    let parts = expander.split();
+                    assert!(parts.$px.is_low());
                 }
                 check_sent_data(expander, &u16_to_u8_array($value)[..]);
             }
         }
-    }
+    };
 }
 
 pin_test!(p0,      1);

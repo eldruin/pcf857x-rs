@@ -155,15 +155,14 @@
 //! # }
 //! ```
 
-
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 extern crate embedded_hal as hal;
-pub use hal::digital::OutputPin;
 #[cfg(feature = "unproven")]
 pub use hal::digital::InputPin;
+pub use hal::digital::OutputPin;
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -173,7 +172,7 @@ pub enum Error<E> {
     /// Invalid input data
     InvalidInputData,
     /// Could not acquire device. Maybe it is already acquired.
-    CouldNotAcquireDevice
+    CouldNotAcquireDevice,
 }
 
 /// I/O pin flags, used to select which pins to read in the `get` functions.
@@ -185,55 +184,57 @@ pub enum Error<E> {
 /// Note that P10-17 can only be used with PCF8575 devices.
 #[derive(Debug, Clone)]
 pub struct PinFlag {
-    mask: u16
+    mask: u16,
 }
 
 impl PinFlag {
     /// Pin 0
-    pub const P0  :  PinFlag = PinFlag { mask:     1 };
+    pub const P0: PinFlag = PinFlag { mask: 1 };
     /// Pin 1
-    pub const P1  :  PinFlag = PinFlag { mask:     2 };
+    pub const P1: PinFlag = PinFlag { mask: 2 };
     /// Pin 2
-    pub const P2  :  PinFlag = PinFlag { mask:     4 };
+    pub const P2: PinFlag = PinFlag { mask: 4 };
     /// Pin 3
-    pub const P3  :  PinFlag = PinFlag { mask:     8 };
+    pub const P3: PinFlag = PinFlag { mask: 8 };
     /// Pin 4
-    pub const P4  :  PinFlag = PinFlag { mask:    16 };
+    pub const P4: PinFlag = PinFlag { mask: 16 };
     /// Pin 5
-    pub const P5  :  PinFlag = PinFlag { mask:    32 };
+    pub const P5: PinFlag = PinFlag { mask: 32 };
     /// Pin 6
-    pub const P6  :  PinFlag = PinFlag { mask:    64 };
+    pub const P6: PinFlag = PinFlag { mask: 64 };
     /// Pin 7
-    pub const P7  :  PinFlag = PinFlag { mask:   128 };
+    pub const P7: PinFlag = PinFlag { mask: 128 };
 
     /// Pin 10 (only PCF8575)
-    pub const P10 :  PinFlag = PinFlag { mask:   256 };
+    pub const P10: PinFlag = PinFlag { mask: 256 };
     /// Pin 11 (only PCF8575)
-    pub const P11 :  PinFlag = PinFlag { mask:   512 };
+    pub const P11: PinFlag = PinFlag { mask: 512 };
     /// Pin 12 (only PCF8575)
-    pub const P12 :  PinFlag = PinFlag { mask:  1024 };
+    pub const P12: PinFlag = PinFlag { mask: 1024 };
     /// Pin 13 (only PCF8575)
-    pub const P13 :  PinFlag = PinFlag { mask:  2048 };
+    pub const P13: PinFlag = PinFlag { mask: 2048 };
     /// Pin 14 (only PCF8575)
-    pub const P14 :  PinFlag = PinFlag { mask:  4096 };
+    pub const P14: PinFlag = PinFlag { mask: 4096 };
     /// Pin 15 (only PCF8575)
-    pub const P15 :  PinFlag = PinFlag { mask:  8192 };
+    pub const P15: PinFlag = PinFlag { mask: 8192 };
     /// Pin 16 (only PCF8575)
-    pub const P16 :  PinFlag = PinFlag { mask: 16384 };
+    pub const P16: PinFlag = PinFlag { mask: 16384 };
     /// Pin 17 (only PCF8575)
-    pub const P17 :  PinFlag = PinFlag { mask: 32768 };
+    pub const P17: PinFlag = PinFlag { mask: 32768 };
 }
 
-#[cfg(not(feature= "std"))]
+#[cfg(not(feature = "std"))]
 use core::ops::BitOr;
-#[cfg(feature= "std")]
+#[cfg(feature = "std")]
 use std::ops::BitOr;
 
 impl BitOr for PinFlag {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self {
-        PinFlag { mask: self.mask | rhs.mask }
+        PinFlag {
+            mask: self.mask | rhs.mask,
+        }
     }
 }
 
@@ -243,7 +244,7 @@ pub enum SlaveAddr {
     /// Default slave address
     Default,
     /// Alternative slave address providing bit values for A2, A1 and A0
-    Alternative(bool, bool, bool)
+    Alternative(bool, bool, bool),
 }
 
 impl Default for SlaveAddr {
@@ -270,7 +271,7 @@ pub use pins::{ pcf8574, pcf8575,
                  P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
                 P10, P11, P12, P13, P14, P15, P16, P17 };
 mod devices;
-pub use devices::pcf8574::{ Pcf8574, Pcf8574a };
+pub use devices::pcf8574::{Pcf8574, Pcf8574a};
 pub use devices::pcf8575::Pcf8575;
 
 

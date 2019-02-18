@@ -4,9 +4,8 @@
 extern crate embedded_hal as hal;
 use hal::blocking::i2c::Write;
 
-use super::super::{ Error, Pcf8574, Pcf8574a, Pcf8575, PinFlag };
 use super::super::pins;
-
+use super::super::{Error, Pcf8574, Pcf8574a, Pcf8575, PinFlag};
 
 macro_rules! pcf8574_get_pin_impl {
     ( $( $device_name:ident ),+ ) => {
@@ -39,10 +38,9 @@ macro_rules! pcf8574_get_pin_impl {
 
 pcf8574_get_pin_impl!(Pcf8574, Pcf8574a);
 
-
 impl<I2C, E> pins::GetPin<E> for Pcf8575<I2C>
 where
-    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
+    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>,
 {
     fn is_pin_high(&self, pin_flag: PinFlag) -> Result<bool, Error<E>> {
         let dev = self.acquire_device()?;

@@ -12,7 +12,7 @@ use std::cell;
 use core::cell;
 
 use super::super::pins::pcf8575;
-use super::super::{ SlaveAddr, Error, PinFlag };
+use super::super::{Error, PinFlag, SlaveAddr};
 
 /// PCF8575 device driver
 #[derive(Debug, Default)]
@@ -33,17 +33,17 @@ pub(crate) struct Pcf8575Data<I2C> {
 
 impl<I2C, E> Pcf8575<I2C>
 where
-    I2C: Write<Error = E>
+    I2C: Write<Error = E>,
 {
     /// Create new instance of the PCF8575 device
     pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
         let dev = Pcf8575Data {
             i2c,
             address: address.addr(0b010_0000),
-            last_set_mask: 0
+            last_set_mask: 0,
         };
         Pcf8575 {
-            dev: cell::RefCell::new(dev)
+            dev: cell::RefCell::new(dev),
         }
     }
 
@@ -77,10 +77,8 @@ where
             }
             let mut dev = self.acquire_device()?;
             let address = dev.address;
-            dev.i2c
-                .write(address, &data)
-                .map_err(Error::I2C)?;
-            dev.last_set_mask = ((data[data.len()-1] as u16) << 8) | data[data.len()-2] as u16;
+            dev.i2c.write(address, &data).map_err(Error::I2C)?;
+            dev.last_set_mask = ((data[data.len() - 1] as u16) << 8) | data[data.len() - 2] as u16;
         }
         Ok(())
     }
@@ -91,13 +89,15 @@ where
     }
 
     pub(crate) fn acquire_device(&self) -> Result<cell::RefMut<Pcf8575Data<I2C>>, Error<E>> {
-        self.dev.try_borrow_mut().map_err(|_| Error::CouldNotAcquireDevice)
+        self.dev
+            .try_borrow_mut()
+            .map_err(|_| Error::CouldNotAcquireDevice)
     }
 }
 
 impl<I2C, E> Pcf8575<I2C>
 where
-    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
+    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>,
 {
     /// Get the status of the selected I/O pins.
     /// The mask of the pins to be read can be created with a combination of
@@ -107,7 +107,10 @@ where
         Self::_get(dev, mask)
     }
 
-    pub(crate) fn _get(mut dev: cell::RefMut<Pcf8575Data<I2C>>, mask: &PinFlag) -> Result<u16, Error<E>> {
+    pub(crate) fn _get(
+        mut dev: cell::RefMut<Pcf8575Data<I2C>>,
+        mask: &PinFlag,
+    ) -> Result<u16, Error<E>> {
         let address = dev.address;
         let mask = mask.mask | dev.last_set_mask;
         // configure selected pins as inputs
@@ -118,9 +121,9 @@ where
         let mut bits = [0; 2];
         dev.i2c
             .read(address, &mut bits)
-            .map_err(Error::I2C).and(Ok(u8_array_to_u16(bits)))
+            .map_err(Error::I2C)
+            .and(Ok(u8_array_to_u16(bits)))
     }
-            
 
     /// Get the status of the selected I/O pins repeatedly and put them in the
     /// provided array.
@@ -141,9 +144,7 @@ where
                 .write(address, &u16_to_u8_array(mask))
                 .map_err(Error::I2C)?;
 
-            dev.i2c
-                .read(address, &mut data)
-                .map_err(Error::I2C)?;
+            dev.i2c.read(address, &mut data).map_err(Error::I2C)?;
         }
         Ok(())
     }
@@ -156,7 +157,6 @@ fn u16_to_u8_array(input: u16) -> [u8; 2] {
 fn u8_array_to_u16(input: [u8; 2]) -> u16 {
     input[0] as u16 | ((input[1] as u16) << 8)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -174,7 +174,7 @@ mod tests {
         assert_eq!(0xABCD, u8_array_to_u16([0xCD, 0xAB]));
     }
 
-    fn setup<'a>(data: &'a[u8]) -> Pcf8575<hal::I2cMock<'a>> {
+    fn setup<'a>(data: &'a [u8]) -> Pcf8575<hal::I2cMock<'a>> {
         let mut dev = hal::I2cMock::new();
         dev.set_read_data(&data);
         Pcf8575::new(dev, SlaveAddr::default())
@@ -216,7 +216,6 @@ mod tests {
         assert_eq!([0xAB, 0xCD], data);
     }
 
-
     #[test]
     fn reading_multiple_words_conserves_high_pins() {
         let mut expander = setup(&[0xAB, 0xCD]);
@@ -230,4 +229,3 @@ mod tests {
     }
 
 }
-

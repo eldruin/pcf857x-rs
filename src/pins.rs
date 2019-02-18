@@ -7,7 +7,7 @@ pub use hal::digital::OutputPin;
 #[cfg(feature = "unproven")]
 pub use hal::digital::InputPin;
 
-use super::{ Error, PinFlag };
+use super::{Error, PinFlag};
 
 #[cfg(feature = "std")]
 use std::marker;
@@ -69,7 +69,7 @@ pub trait SetPin<E> {
     /// Set a pin high
     fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>>;
     /// Set a pin low
-    fn set_pin_low (&self, pin_flag: PinFlag) -> Result<(), Error<E>>;
+    fn set_pin_low(&self, pin_flag: PinFlag) -> Result<(), Error<E>>;
 }
 
 /// Read if a pin is high or low
@@ -77,7 +77,7 @@ pub trait GetPin<E> {
     /// Reads a pin and returns whether it is high
     fn is_pin_high(&self, pin_flag: PinFlag) -> Result<bool, Error<E>>;
     /// Reads a pin and returns whether it is low
-    fn is_pin_low (&self, pin_flag: PinFlag) -> Result<bool, Error<E>>;
+    fn is_pin_low(&self, pin_flag: PinFlag) -> Result<bool, Error<E>>;
 }
 
 macro_rules! io_pin_impl {

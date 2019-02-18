@@ -1,13 +1,13 @@
-extern crate pcf857x;
 extern crate embedded_hal_mock as hal;
-use pcf857x::{ Pcf8574, Pcf8574a, SlaveAddr, PinFlag, Error };
+extern crate pcf857x;
+use pcf857x::{Error, Pcf8574, Pcf8574a, PinFlag, SlaveAddr};
 
 macro_rules! pcf8574_tests {
     ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
         mod $test_mod_name {
             use super::*;
-            
-            fn setup<'a>(data: &'a[u8]) -> $device_name<hal::I2cMock<'a>> {
+
+            fn setup<'a>(data: &'a [u8]) -> $device_name<hal::I2cMock<'a>> {
                 let mut dev = hal::I2cMock::new();
                 dev.set_read_data(&data);
                 $device_name::new(dev, SlaveAddr::default())
@@ -25,7 +25,6 @@ macro_rules! pcf8574_tests {
                 assert!(dev.get_write_data().is_empty());
             }
 
-
             #[test]
             fn can_set_output_values() {
                 let status = 0b1010_1010;
@@ -40,7 +39,7 @@ macro_rules! pcf8574_tests {
                 let mask = PinFlag::P0 | PinFlag::P17;
                 match expander.get(&mask) {
                     Err(Error::InvalidInputData) => (),
-                    _ => panic!()
+                    _ => panic!(),
                 }
             }
 
@@ -74,35 +73,35 @@ macro_rules! pcf8574_tests {
                 let mask = PinFlag::P0 | PinFlag::P17;
                 match expander.read_array(&mask, &mut data) {
                     Err(Error::InvalidInputData) => (),
-                    _ => panic!()
+                    _ => panic!(),
                 }
             }
-            pcf8574_pin_test!(p0,   1);
-            pcf8574_pin_test!(p1,   2);
-            pcf8574_pin_test!(p2,   4);
-            pcf8574_pin_test!(p3,   8);
-            pcf8574_pin_test!(p4,  16);
-            pcf8574_pin_test!(p5,  32);
-            pcf8574_pin_test!(p6,  64);
+            pcf8574_pin_test!(p0, 1);
+            pcf8574_pin_test!(p1, 2);
+            pcf8574_pin_test!(p2, 4);
+            pcf8574_pin_test!(p3, 8);
+            pcf8574_pin_test!(p4, 16);
+            pcf8574_pin_test!(p5, 32);
+            pcf8574_pin_test!(p6, 64);
             pcf8574_pin_test!(p7, 128);
         }
-    }
+    };
 }
 
 macro_rules! pcf8574_pin_test {
     ($px:ident, $value:expr) => {
         mod $px {
             use super::*;
-            use pcf857x::OutputPin;
             #[cfg(feature = "unproven")]
             use pcf857x::InputPin;
+            use pcf857x::OutputPin;
 
             #[test]
             fn can_split_and_set_high() {
                 let expander = setup(&[0]);
                 {
-                  let mut parts = expander.split();
-                  parts.$px.set_high();
+                    let mut parts = expander.split();
+                    parts.$px.set_high();
                 }
                 check_sent_data(expander, &[$value]);
             }
@@ -112,8 +111,8 @@ macro_rules! pcf8574_pin_test {
                 let mut expander = setup(&[0]);
                 expander.set(0b1111_1111).unwrap();
                 {
-                  let mut parts = expander.split();
-                  parts.$px.set_low();
+                    let mut parts = expander.split();
+                    parts.$px.set_low();
                 }
                 check_sent_data(expander, &[0b1111_1111 & !$value]);
             }
@@ -123,8 +122,8 @@ macro_rules! pcf8574_pin_test {
             fn can_split_and_get_is_high() {
                 let expander = setup(&[$value]);
                 {
-                  let parts = expander.split();
-                  assert!(parts.$px.is_high());
+                    let parts = expander.split();
+                    assert!(parts.$px.is_high());
                 }
                 check_sent_data(expander, &[$value]);
             }
@@ -134,13 +133,13 @@ macro_rules! pcf8574_pin_test {
             fn can_split_and_get_is_low() {
                 let expander = setup(&[!$value]);
                 {
-                  let parts = expander.split();
-                  assert!(parts.$px.is_low());
+                    let parts = expander.split();
+                    assert!(parts.$px.is_low());
                 }
                 check_sent_data(expander, &[$value]);
             }
         }
-    }
+    };
 }
 
 pcf8574_tests!(Pcf8574,  pcf8574_tests,  0b010_0000);
