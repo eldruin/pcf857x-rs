@@ -17,13 +17,13 @@
 //! output to activate indicator devices such as LEDs.
 //!
 //! The active LOW open-drain interrupt output (INT) can be connected to the interrupt logic
-//! of the microcontroller and is activated when any input state differs from its corresponding 
+//! of the microcontroller and is activated when any input state differs from its corresponding
 //! input port register state.
 //!
 //! Datasheets:
 //! - [PCF8574 / PCF8574A](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
 //! - [PCF8575](https://www.nxp.com/documents/data_sheet/PCF8575.pdf)
-//! 
+//!
 //! ## Splitting the device into individual input/output pins
 //!
 //! By calling `split()` on the device it is possible to get a structure holding the
@@ -46,6 +46,10 @@
 //! At the moment, no mutex has been implemented for the individual pin access.
 //!
 //! ## Usage examples (see also examples folder)
+//!
+//! Please find additional examples using hardware in this repository: [driver-examples]
+//!
+//! [driver-examples]: https://github.com/eldruin/driver-examples
 //!
 //! ### Instantiating with the default address
 //!

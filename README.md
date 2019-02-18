@@ -17,12 +17,18 @@ independently assigned as an input to monitor interrupt status or keypads, or as
 output to activate indicator devices such as LEDs.
 
 The active LOW open-drain interrupt output (INT) can be connected to the interrupt logic
-of the microcontroller and is activated when any input state differs from its corresponding 
+of the microcontroller and is activated when any input state differs from its corresponding
 input port register state.
 
 Datasheets:
 - [PCF8574 / PCF8574A](https://www.nxp.com/docs/en/data-sheet/PCF8574_PCF8574A.pdf)
 - [PCF8575](https://www.nxp.com/documents/data_sheet/PCF8575.pdf)
+
+## Usage
+
+Please find additional examples using hardware in this repository: [driver-examples]
+
+[driver-examples]: https://github.com/eldruin/driver-examples
 
 ## License
 
