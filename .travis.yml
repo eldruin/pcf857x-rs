@@ -7,9 +7,13 @@ matrix:
     - env: TARGET=x86_64-unknown-linux-gnu
       rust: nightly
 
+    # Minimum Supported Rust Version
+    - env: TARGET=x86_64-unknown-linux-gnu
+      rust: 1.31.0
+
     - env: TARGET=x86_64-unknown-linux-musl FEATURES=unproven
       rust: nightly
-    
+
     - env: TARGET=x86_64-unknown-linux-gnu FEATURES=unproven
 
     - env: TARGET=x86_64-unknown-linux-gnu FEATURES=unproven
@@ -19,6 +23,10 @@ matrix:
 
     - env: TARGET=x86_64-unknown-linux-gnu FEATURES=std,unproven
       rust: nightly
+
+    # Minimum Supported Rust Version
+    - env: TARGET=x86_64-unknown-linux-gnu FEATURES=std,unproven
+      rust: 1.31.0
 
     # Raspberry Pi 1
     - env: TARGET=arm-unknown-linux-gnueabi FEATURES=unproven DISABLE_EXAMPLES=1 DISABLE_TESTS=1
