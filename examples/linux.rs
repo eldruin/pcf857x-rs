@@ -7,12 +7,13 @@ use pcf857x::{ Pcf8574, SlaveAddr, PinFlag };
 
 fn main() {
     let dev = I2cdev::new("/dev/i2c-1").unwrap();
-    let mut expander = Pcf8574::new(dev, SlaveAddr::default());
+    let address = SlaveAddr::default();
+    let mut expander = Pcf8574::new(dev, address);
     let output_pin_status = 0b1010_1010;
     expander.set(output_pin_status).unwrap();
-    
-    let mask_of_pins_to_be_read = PinFlag::P0 | PinFlag::P7;
-    let read_input_pin_status = expander.get(&mask_of_pins_to_be_read).unwrap();
 
-    println!("Input pin status: {}", read_input_pin_status);
+    let pins_to_be_read = PinFlag::P0 | PinFlag::P7;
+    let input_status = expander.get(&pins_to_be_read).unwrap();
+
+    println!("Input pin status: {}", input_status);
 }
