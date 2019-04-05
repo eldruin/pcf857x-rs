@@ -19,10 +19,10 @@ include = [
     "/LICENSE-APACHE",
 ]
 
-
-[badges.travis-ci]
-branch = "master"
-repository = "eldruin/pcf857x-rs"
+[badges]
+travis-ci = { repository = "eldruin/pcf857x-rs", branch = "master" }
+coveralls = { repository = "eldruin/pcf857x-rs", branch = "master", service = "github" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 embedded-hal = "0.2"
