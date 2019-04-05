@@ -124,19 +124,19 @@ macro_rules! pin_test {
     };
 }
 
-pin_test!(p0,      1);
-pin_test!(p1,      2);
-pin_test!(p2,      4);
-pin_test!(p3,      8);
-pin_test!(p4,     16);
-pin_test!(p5,     32);
-pin_test!(p6,     64);
-pin_test!(p7,    128);
-pin_test!(p10,   256);
-pin_test!(p11,   512);
-pin_test!(p12,  1024);
-pin_test!(p13,  2048);
-pin_test!(p14,  4096);
-pin_test!(p15,  8192);
+pin_test!(p0, 1);
+pin_test!(p1, 2);
+pin_test!(p2, 4);
+pin_test!(p3, 8);
+pin_test!(p4, 16);
+pin_test!(p5, 32);
+pin_test!(p6, 64);
+pin_test!(p7, 128);
+pin_test!(p10, 256);
+pin_test!(p11, 512);
+pin_test!(p12, 1024);
+pin_test!(p13, 2048);
+pin_test!(p14, 4096);
+pin_test!(p15, 8192);
 pin_test!(p16, 16384);
 pin_test!(p17, 32768);

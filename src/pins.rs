@@ -24,8 +24,7 @@ macro_rules! pins {
         )*
     }
 }
-pins!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
-      P10, P11, P12, P13, P14, P15, P16, P17);
+pins!(P0, P1, P2, P3, P4, P5, P6, P7, P10, P11, P12, P13, P14, P15, P16, P17);
 
 macro_rules! parts {
     ( $( $px:ident, $PX:ident ),+ ) => {
@@ -60,8 +59,10 @@ pub mod pcf8574 {
 
 /// Module containing structures specific to PCF8575
 pub mod pcf8575 {
-    parts!(p0,  P0,  p1,  P1,  p2,  P2,  p3,  P3,  p4,  P4,  p5,  P5,  p6,  P6,  p7,  P7,
-           p10, P10, p11, P11, p12, P12, p13, P13, p14, P14, p15, P15, p16, P16, p17, P17);
+    parts!(
+        p0, P0, p1, P1, p2, P2, p3, P3, p4, P4, p5, P5, p6, P6, p7, P7, p10, P10, p11, P11, p12,
+        P12, p13, P13, p14, P14, p15, P15, p16, P16, p17, P17
+    );
 }
 
 /// Set a pin high or low
@@ -127,7 +128,4 @@ macro_rules! io_pin_impl {
     }
 }
 
-io_pin_impl!( P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
-             P10, P11, P12, P13, P14, P15, P16, P17 );
-
-
+io_pin_impl!(P0, P1, P2, P3, P4, P5, P6, P7, P10, P11, P12, P13, P14, P15, P16, P17);

@@ -258,22 +258,20 @@ impl SlaveAddr {
     fn addr(self, default: u8) -> u8 {
         match self {
             SlaveAddr::Default => default,
-            SlaveAddr::Alternative(a2, a1, a0) => default           |
-                                                  ((a2 as u8) << 2) |
-                                                  ((a1 as u8) << 1) |
-                                                    a0 as u8
+            SlaveAddr::Alternative(a2, a1, a0) => {
+                default | ((a2 as u8) << 2) | ((a1 as u8) << 1) | a0 as u8
+            }
         }
     }
 }
 
 mod pins;
-pub use pins::{ pcf8574, pcf8575,
-                 P0,  P1,  P2,  P3,  P4,  P5,  P6,  P7,
-                P10, P11, P12, P13, P14, P15, P16, P17 };
+pub use pins::{
+    pcf8574, pcf8575, P0, P1, P10, P11, P12, P13, P14, P15, P16, P17, P2, P3, P4, P5, P6, P7,
+};
 mod devices;
 pub use devices::pcf8574::{Pcf8574, Pcf8574a};
 pub use devices::pcf8575::Pcf8575;
-
 
 #[cfg(test)]
 mod tests {
@@ -290,31 +288,46 @@ mod tests {
     #[test]
     fn can_generate_alternative_addresses() {
         let default = 0b010_0000;
-        assert_eq!(0b010_0000, SlaveAddr::Alternative(false, false, false).addr(default));
-        assert_eq!(0b010_0001, SlaveAddr::Alternative(false, false,  true).addr(default));
-        assert_eq!(0b010_0010, SlaveAddr::Alternative(false,  true, false).addr(default));
-        assert_eq!(0b010_0100, SlaveAddr::Alternative( true, false, false).addr(default));
-        assert_eq!(0b010_0111, SlaveAddr::Alternative( true,  true,  true).addr(default));
+        assert_eq!(
+            0b010_0000,
+            SlaveAddr::Alternative(false, false, false).addr(default)
+        );
+        assert_eq!(
+            0b010_0001,
+            SlaveAddr::Alternative(false, false, true).addr(default)
+        );
+        assert_eq!(
+            0b010_0010,
+            SlaveAddr::Alternative(false, true, false).addr(default)
+        );
+        assert_eq!(
+            0b010_0100,
+            SlaveAddr::Alternative(true, false, false).addr(default)
+        );
+        assert_eq!(
+            0b010_0111,
+            SlaveAddr::Alternative(true, true, true).addr(default)
+        );
     }
 
     #[test]
     fn pin_flags_are_correct() {
-        assert_eq!(1,   PinFlag::P0.mask);
-        assert_eq!(2,   PinFlag::P1.mask);
-        assert_eq!(4,   PinFlag::P2.mask);
-        assert_eq!(8,   PinFlag::P3.mask);
-        assert_eq!(16,  PinFlag::P4.mask);
-        assert_eq!(32,  PinFlag::P5.mask);
-        assert_eq!(64,  PinFlag::P6.mask);
+        assert_eq!(1, PinFlag::P0.mask);
+        assert_eq!(2, PinFlag::P1.mask);
+        assert_eq!(4, PinFlag::P2.mask);
+        assert_eq!(8, PinFlag::P3.mask);
+        assert_eq!(16, PinFlag::P4.mask);
+        assert_eq!(32, PinFlag::P5.mask);
+        assert_eq!(64, PinFlag::P6.mask);
         assert_eq!(128, PinFlag::P7.mask);
 
-        assert_eq!(1 << 8,   PinFlag::P10.mask);
-        assert_eq!(2 << 8,   PinFlag::P11.mask);
-        assert_eq!(4 << 8,   PinFlag::P12.mask);
-        assert_eq!(8 << 8,   PinFlag::P13.mask);
-        assert_eq!(16 << 8,  PinFlag::P14.mask);
-        assert_eq!(32 << 8,  PinFlag::P15.mask);
-        assert_eq!(64 << 8,  PinFlag::P16.mask);
+        assert_eq!(1 << 8, PinFlag::P10.mask);
+        assert_eq!(2 << 8, PinFlag::P11.mask);
+        assert_eq!(4 << 8, PinFlag::P12.mask);
+        assert_eq!(8 << 8, PinFlag::P13.mask);
+        assert_eq!(16 << 8, PinFlag::P14.mask);
+        assert_eq!(32 << 8, PinFlag::P15.mask);
+        assert_eq!(64 << 8, PinFlag::P16.mask);
         assert_eq!(128 << 8, PinFlag::P17.mask);
     }
 }

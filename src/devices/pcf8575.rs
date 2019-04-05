@@ -78,7 +78,8 @@ where
             let mut dev = self.acquire_device()?;
             let address = dev.address;
             dev.i2c.write(address, &data).map_err(Error::I2C)?;
-            dev.last_set_mask = (u16::from(data[data.len() - 1]) << 8) | u16::from(data[data.len() - 2]);
+            dev.last_set_mask =
+                (u16::from(data[data.len() - 1]) << 8) | u16::from(data[data.len() - 2]);
         }
         Ok(())
     }

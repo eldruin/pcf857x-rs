@@ -142,5 +142,5 @@ macro_rules! pcf8574_pin_test {
     };
 }
 
-pcf8574_tests!(Pcf8574,  pcf8574_tests,  0b010_0000);
+pcf8574_tests!(Pcf8574, pcf8574_tests, 0b010_0000);
 pcf8574_tests!(Pcf8574a, pcf8574a_tests, 0b011_1000);
