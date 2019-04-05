@@ -1,7 +1,3 @@
-#![deny(unsafe_code)]
-#![deny(missing_docs)]
-
-extern crate embedded_hal as hal;
 pub use hal::digital::OutputPin;
 
 #[cfg(feature = "unproven")]

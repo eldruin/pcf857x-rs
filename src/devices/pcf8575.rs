@@ -1,7 +1,3 @@
-#![deny(unsafe_code)]
-#![deny(missing_docs)]
-
-extern crate embedded_hal as hal;
 use core::cell;
 use hal::blocking::i2c::Write;
 pub use hal::digital::OutputPin;

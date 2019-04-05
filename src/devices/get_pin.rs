@@ -1,11 +1,6 @@
-#![deny(unsafe_code)]
-#![deny(missing_docs)]
-
-extern crate embedded_hal as hal;
-use hal::blocking::i2c::Write;
-
 use super::super::pins;
 use super::super::{Error, Pcf8574, Pcf8574a, Pcf8575, PinFlag};
+use hal::blocking::i2c::Write;
 
 macro_rules! pcf8574_get_pin_impl {
     ( $( $device_name:ident ),+ ) => {
