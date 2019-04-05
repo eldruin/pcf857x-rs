@@ -11,12 +11,12 @@ categories = ["embedded", "hardware-support", "no-std"]
 homepage = "https://github.com/eldruin/pcf857x-rs"
 documentation = "https://docs.rs/pcf857x"
 include = [
-    "**/*.rs",
-    "Cargo.toml",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE-MIT",
-    "LICENSE-APACHE",
+    "/**/*.rs",
+    "/Cargo.toml",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE-MIT",
+    "/LICENSE-APACHE",
 ]
 
 
