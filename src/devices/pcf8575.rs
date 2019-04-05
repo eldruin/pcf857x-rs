@@ -2,14 +2,9 @@
 #![deny(missing_docs)]
 
 extern crate embedded_hal as hal;
+use core::cell;
 use hal::blocking::i2c::Write;
 pub use hal::digital::OutputPin;
-
-#[cfg(feature = "std")]
-use std::cell;
-
-#[cfg(not(feature = "std"))]
-use core::cell;
 
 use super::super::pins::pcf8575;
 use super::super::{Error, PinFlag, SlaveAddr};

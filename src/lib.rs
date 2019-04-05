@@ -157,7 +157,7 @@
 
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 
 extern crate embedded_hal as hal;
 #[cfg(feature = "unproven")]
@@ -223,10 +223,7 @@ impl PinFlag {
     pub const P17: PinFlag = PinFlag { mask: 32768 };
 }
 
-#[cfg(not(feature = "std"))]
 use core::ops::BitOr;
-#[cfg(feature = "std")]
-use std::ops::BitOr;
 
 impl BitOr for PinFlag {
     type Output = Self;

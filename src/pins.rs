@@ -8,14 +8,7 @@ pub use hal::digital::OutputPin;
 pub use hal::digital::InputPin;
 
 use super::{Error, PinFlag};
-
-#[cfg(feature = "std")]
-use std::marker;
-
-#[cfg(not(feature = "std"))]
-use core::marker;
-
-use self::marker::PhantomData;
+use core::marker::PhantomData;
 
 macro_rules! pins {
     ( $( $PX:ident ),+ ) => {

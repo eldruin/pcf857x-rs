@@ -36,5 +36,4 @@ lto = true
 
 [features]
 default = ["unproven"]
-std = []
 unproven = ["embedded-hal/unproven"]
