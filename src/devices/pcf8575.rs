@@ -78,7 +78,7 @@ where
             let mut dev = self.acquire_device()?;
             let address = dev.address;
             dev.i2c.write(address, &data).map_err(Error::I2C)?;
-            dev.last_set_mask = ((data[data.len() - 1] as u16) << 8) | data[data.len() - 2] as u16;
+            dev.last_set_mask = (u16::from(data[data.len() - 1]) << 8) | u16::from(data[data.len() - 2]);
         }
         Ok(())
     }
@@ -155,7 +155,7 @@ fn u16_to_u8_array(input: u16) -> [u8; 2] {
 }
 
 fn u8_array_to_u16(input: [u8; 2]) -> u16 {
-    input[0] as u16 | ((input[1] as u16) << 8)
+    u16::from(input[0]) | (u16::from(input[1]) << 8)
 }
 
 #[cfg(test)]
