@@ -45,8 +45,7 @@ where
 
     /// Set the status of all I/O pins.
     pub fn set(&mut self, bits: u16) -> Result<(), Error<E>> {
-        let dev = self.acquire_device()?;
-        Self::_set(dev, bits)
+        self.do_on_acquired(|dev| Self::_set(dev, bits))
     }
 
     pub(crate) fn _set(mut dev: cell::RefMut<Pcf8575Data<I2C>>, bits: u16) -> Result<(), Error<E>> {
@@ -66,11 +65,13 @@ where
             if data.len() % 2 != 0 {
                 return Err(Error::InvalidInputData);
             }
-            let mut dev = self.acquire_device()?;
-            let address = dev.address;
-            dev.i2c.write(address, &data).map_err(Error::I2C)?;
-            dev.last_set_mask =
-                (u16::from(data[data.len() - 1]) << 8) | u16::from(data[data.len() - 2]);
+            self.do_on_acquired(|mut dev| {
+                let address = dev.address;
+                dev.i2c.write(address, &data).map_err(Error::I2C)?;
+                dev.last_set_mask =
+                    (u16::from(data[data.len() - 1]) << 8) | u16::from(data[data.len() - 2]);
+                Ok(())
+            })?;
         }
         Ok(())
     }
@@ -80,10 +81,15 @@ where
         pcf8575::Parts::new(&self)
     }
 
-    pub(crate) fn acquire_device(&self) -> Result<cell::RefMut<Pcf8575Data<I2C>>, Error<E>> {
-        self.dev
+    pub(crate) fn do_on_acquired<R>(
+        &self,
+        f: impl FnOnce(cell::RefMut<Pcf8575Data<I2C>>) -> Result<R, Error<E>>,
+    ) -> Result<R, Error<E>> {
+        let dev = self
+            .dev
             .try_borrow_mut()
-            .map_err(|_| Error::CouldNotAcquireDevice)
+            .map_err(|_| Error::CouldNotAcquireDevice)?;
+        f(dev)
     }
 }
 
@@ -95,8 +101,7 @@ where
     /// The mask of the pins to be read can be created with a combination of
     /// `PinFlag::P0` to `PinFlag::P17`.
     pub fn get(&mut self, mask: &PinFlag) -> Result<u16, Error<E>> {
-        let dev = self.acquire_device()?;
-        Self::_get(dev, mask)
+        self.do_on_acquired(|dev| Self::_get(dev, mask))
     }
 
     pub(crate) fn _get(
@@ -128,15 +133,16 @@ where
             if data.len() % 2 != 0 {
                 return Err(Error::InvalidInputData);
             }
-            let mut dev = self.acquire_device()?;
-            let address = dev.address;
-            let mask = mask.mask | dev.last_set_mask;
-            // configure selected pins as inputs
-            dev.i2c
-                .write(address, &u16_to_u8_array(mask))
-                .map_err(Error::I2C)?;
+            self.do_on_acquired(|mut dev| {
+                let address = dev.address;
+                let mask = mask.mask | dev.last_set_mask;
+                // configure selected pins as inputs
+                dev.i2c
+                    .write(address, &u16_to_u8_array(mask))
+                    .map_err(Error::I2C)?;
 
-            dev.i2c.read(address, &mut data).map_err(Error::I2C)?;
+                dev.i2c.read(address, &mut data).map_err(Error::I2C)
+            })?;
         }
         Ok(())
     }

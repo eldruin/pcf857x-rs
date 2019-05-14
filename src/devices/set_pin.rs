@@ -16,15 +16,17 @@ macro_rules! pcf8574_set_pin_impl {
                 I2C: Write<Error = E>
             {
                 fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
-                    let dev = self.acquire_device()?;
+                    self.do_on_acquired(|dev|{
                     let new_mask = dev.last_set_mask | pin_flag.mask as u8;
                     Self::_set(dev, new_mask)
+                    })
                 }
 
                 fn set_pin_low(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
-                    let dev = self.acquire_device()?;
+                    self.do_on_acquired(|dev|{
                     let new_mask = dev.last_set_mask & !pin_flag.mask as u8;
                     Self::_set(dev, new_mask)
+                    })
                 }
             }
         )*
@@ -38,14 +40,16 @@ where
     I2C: Write<Error = E>,
 {
     fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
-        let dev = self.acquire_device()?;
-        let new_mask = dev.last_set_mask | pin_flag.mask;
-        Self::_set(dev, new_mask)
+        self.do_on_acquired(|dev| {
+            let new_mask = dev.last_set_mask | pin_flag.mask;
+            Self::_set(dev, new_mask)
+        })
     }
 
     fn set_pin_low(&self, pin_flag: PinFlag) -> Result<(), Error<E>> {
-        let dev = self.acquire_device()?;
-        let new_mask = dev.last_set_mask & !pin_flag.mask;
-        Self::_set(dev, new_mask)
+        self.do_on_acquired(|dev| {
+            let new_mask = dev.last_set_mask & !pin_flag.mask;
+            Self::_set(dev, new_mask)
+        })
     }
 }

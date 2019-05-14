@@ -16,15 +16,17 @@ macro_rules! pcf8574_get_pin_impl {
                 I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>
             {
                 fn is_pin_high(&self, pin_flag: PinFlag) -> Result<bool, Error<E>> {
-                    let dev = self.acquire_device()?;
+                    self.do_on_acquired(|dev|{
                     let data = Self::_get(dev, &pin_flag)?;
                     Ok(data & pin_flag.mask as u8 != 0)
+                    })
                 }
 
                 fn is_pin_low(&self, pin_flag: PinFlag) -> Result<bool, Error<E>> {
-                    let dev = self.acquire_device()?;
+                    self.do_on_acquired(|dev|{
                     let data = Self::_get(dev, &pin_flag)?;
                     Ok(data & pin_flag.mask as u8 == 0)
+                    })
                 }
             }
         )*
@@ -38,14 +40,16 @@ where
     I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>,
 {
     fn is_pin_high(&self, pin_flag: PinFlag) -> Result<bool, Error<E>> {
-        let dev = self.acquire_device()?;
-        let data = Self::_get(dev, &pin_flag)?;
-        Ok(data & pin_flag.mask != 0)
+        self.do_on_acquired(|dev| {
+            let data = Self::_get(dev, &pin_flag)?;
+            Ok(data & pin_flag.mask != 0)
+        })
     }
 
     fn is_pin_low(&self, pin_flag: PinFlag) -> Result<bool, Error<E>> {
-        let dev = self.acquire_device()?;
-        let data = Self::_get(dev, &pin_flag)?;
-        Ok(data & pin_flag.mask == 0)
+        self.do_on_acquired(|dev| {
+            let data = Self::_get(dev, &pin_flag)?;
+            Ok(data & pin_flag.mask == 0)
+        })
     }
 }

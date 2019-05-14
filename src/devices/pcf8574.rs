@@ -45,18 +45,20 @@ macro_rules! pcf8574 {
                 self.data.into_inner().i2c
             }
 
-            pub(crate) fn acquire_device(
+            pub(crate) fn do_on_acquired<R>(
                 &self,
-            ) -> Result<cell::RefMut<$device_data_name<I2C>>, Error<E>> {
-                self.data
+                f: impl FnOnce(cell::RefMut<$device_data_name<I2C>>) -> Result<R, Error<E>>,
+            ) -> Result<R, Error<E>> {
+                let dev = self
+                    .data
                     .try_borrow_mut()
-                    .map_err(|_| Error::CouldNotAcquireDevice)
+                    .map_err(|_| Error::CouldNotAcquireDevice)?;
+                f(dev)
             }
 
             /// Set the status of all I/O pins.
             pub fn set(&mut self, bits: u8) -> Result<(), Error<E>> {
-                let dev = self.acquire_device()?;
-                Self::_set(dev, bits)
+                self.do_on_acquired(|dev| Self::_set(dev, bits))
             }
 
             pub(crate) fn _set(
@@ -72,10 +74,12 @@ macro_rules! pcf8574 {
             /// Set the status of all I/O pins repeatedly by looping through each array element
             pub fn write_array(&mut self, data: &[u8]) -> Result<(), Error<E>> {
                 if let Some(last) = data.last() {
-                    let mut dev = self.acquire_device()?;
-                    let address = dev.address;
-                    dev.i2c.write(address, &data).map_err(Error::I2C)?;
-                    dev.last_set_mask = *last;
+                    self.do_on_acquired(|mut dev| {
+                        let address = dev.address;
+                        dev.i2c.write(address, &data).map_err(Error::I2C)?;
+                        dev.last_set_mask = *last;
+                        Ok(())
+                    })?;
                 }
                 Ok(())
             }
@@ -97,8 +101,7 @@ macro_rules! pcf8574 {
                 if (mask.mask >> 8) != 0 {
                     return Err(Error::InvalidInputData);
                 }
-                let dev = self.acquire_device()?;
-                Self::_get(dev, mask)
+                self.do_on_acquired(|dev| Self::_get(dev, mask))
             }
 
             pub(crate) fn _get(
@@ -130,13 +133,14 @@ macro_rules! pcf8574 {
                     if (mask.mask >> 8) != 0 {
                         return Err(Error::InvalidInputData);
                     }
-                    let mut dev = self.acquire_device()?;
-                    let mask = mask.mask as u8 | dev.last_set_mask;
-                    let address = dev.address;
-                    // configure selected pins as inputs
-                    dev.i2c.write(address, &[mask]).map_err(Error::I2C)?;
+                    self.do_on_acquired(|mut dev| {
+                        let mask = mask.mask as u8 | dev.last_set_mask;
+                        let address = dev.address;
+                        // configure selected pins as inputs
+                        dev.i2c.write(address, &[mask]).map_err(Error::I2C)?;
 
-                    dev.i2c.read(address, &mut data).map_err(Error::I2C)?;
+                        dev.i2c.read(address, &mut data).map_err(Error::I2C)
+                    })?;
                 }
                 Ok(())
             }
