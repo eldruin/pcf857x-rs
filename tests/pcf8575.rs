@@ -1,23 +1,12 @@
 extern crate embedded_hal_mock as hal;
+use hal::i2c::{Mock as I2cMock, Transaction as I2cTrans};
 extern crate pcf857x;
 use pcf857x::{Error, Pcf8575, PinFlag, SlaveAddr};
 
-fn setup<'a>(data: &'a [u8]) -> Pcf8575<hal::I2cMock<'a>> {
-    let mut dev = hal::I2cMock::new();
-    dev.set_read_data(&data);
-    Pcf8575::new(dev, SlaveAddr::default())
-}
+const DEV_ADDR: u8 = 0b010_0000;
 
-fn check_sent_data(expander: Pcf8575<hal::I2cMock>, data: &[u8]) {
-    let dev = expander.destroy();
-    assert_eq!(dev.get_last_address(), Some(0b010_0000));
-    assert_eq!(dev.get_write_data(), &data[..]);
-}
-
-fn check_nothing_was_sent(expander: Pcf8575<hal::I2cMock>) {
-    let dev = expander.destroy();
-    assert!(dev.get_last_address().is_none());
-    assert!(dev.get_write_data().is_empty());
+pub fn new(transactions: &[I2cTrans]) -> Pcf8575<I2cMock> {
+    Pcf8575::new(I2cMock::new(&transactions), SlaveAddr::default())
 }
 
 fn u16_to_u8_array(input: u16) -> [u8; 2] {
@@ -27,44 +16,116 @@ fn u16_to_u8_array(input: u16) -> [u8; 2] {
 #[test]
 fn can_set_output_values() {
     let status = 0b1010_1010_1010_1010;
-    let mut expander = setup(&[0]);
+    let transactions = [I2cTrans::write(DEV_ADDR, u16_to_u8_array(status).to_vec())];
+    let mut expander = new(&transactions);
     expander.set(status).unwrap();
-    check_sent_data(expander, &u16_to_u8_array(status));
+    expander.destroy().done();
 }
 
 #[test]
 fn can_write_multiple_words() {
-    let data = [0b1010_1010, 0b0101_0101];
-    let mut expander = setup(&[0]);
+    let data = [0b0101_0101, 0b1010_1010];
+    let transactions = [I2cTrans::write(DEV_ADDR, data.to_vec())];
+    let mut expander = new(&transactions);
     expander.write_array(&data).unwrap();
-    check_sent_data(expander, &data);
+    expander.destroy().done();
 }
 
 #[test]
 fn write_empty_array_does_nothing() {
-    let mut expander = setup(&[0]);
+    let mut expander = new(&[]);
     expander.write_array(&[]).unwrap();
-    check_nothing_was_sent(expander);
+    expander.destroy().done();
 }
 
 #[test]
 fn write_array_with_odd_word_count_returns_error() {
-    let mut expander = setup(&[0]);
+    let mut expander = new(&[]);
+
     match expander.write_array(&[0]) {
         Err(Error::InvalidInputData) => (),
         _ => panic!(),
-    }
+    };
+    expander.destroy().done();
 }
 
 #[test]
 fn read_multiple_words_with_odd_size_array_returns_error() {
     let mut data = [0; 3];
-    let mut expander = setup(&[0xAB, 0xCD]);
+    let mut expander = new(&[]);
+
     let mask = PinFlag::P0 | PinFlag::P17;
     match expander.read_array(&mask, &mut data) {
         Err(Error::InvalidInputData) => (),
         _ => panic!(),
-    }
+    };
+    expander.destroy().done();
+}
+
+#[test]
+fn can_read_pins() {
+    let transactions = [
+        I2cTrans::write(DEV_ADDR, vec![0x01, 0x80]),
+        I2cTrans::read(DEV_ADDR, vec![0x00, 0x80]),
+    ];
+    let mut expander = new(&transactions);
+    let mask = PinFlag::P0 | PinFlag::P17;
+    let status = expander.get(&mask).unwrap();
+    assert_eq!(0x8000, status);
+    expander.destroy().done();
+}
+
+#[test]
+fn read_conserves_output_high_pins() {
+    let write_status = 0b0101_0101_0101_0101;
+    let transactions = [
+        I2cTrans::write(DEV_ADDR, u16_to_u8_array(write_status).to_vec()),
+        I2cTrans::write(
+            DEV_ADDR,
+            u16_to_u8_array(write_status | 0x01 | 0x8000).to_vec(),
+        ),
+        I2cTrans::read(DEV_ADDR, vec![0x00, 0x80]),
+    ];
+    let mut expander = new(&transactions);
+    expander.set(write_status).unwrap();
+    let mask = PinFlag::P0 | PinFlag::P17;
+    let status = expander.get(&mask).unwrap();
+    assert_eq!(0x8000, status);
+    expander.destroy().done();
+}
+
+#[test]
+fn can_read_multiple_words() {
+    let transactions = [
+        I2cTrans::write(DEV_ADDR, vec![0x01, 0x80]),
+        I2cTrans::read(DEV_ADDR, vec![0xAB, 0xCD]),
+    ];
+    let mut expander = new(&transactions);
+    let mask = PinFlag::P0 | PinFlag::P17;
+    let mut data = [0; 2];
+    expander.read_array(&mask, &mut data).unwrap();
+    assert_eq!([0xAB, 0xCD], data);
+    expander.destroy().done();
+}
+
+#[test]
+fn reading_multiple_words_conserves_high_pins() {
+    let write_status = 0b0101_0101_0101_0101;
+    let transactions = [
+        I2cTrans::write(DEV_ADDR, u16_to_u8_array(write_status).to_vec()),
+        I2cTrans::write(
+            DEV_ADDR,
+            u16_to_u8_array(write_status | 0x01 | 0x8000).to_vec(),
+        ),
+        I2cTrans::read(DEV_ADDR, vec![0xAB, 0xCD]),
+    ];
+    let mut expander = new(&transactions);
+    expander.set(write_status).unwrap();
+    let mask = PinFlag::P0 | PinFlag::P17;
+    let mut data = [0; 2];
+    expander.read_array(&mask, &mut data).unwrap();
+    assert_eq!([0xAB, 0xCD], data);
+    expander.destroy().done();
 }
 
 macro_rules! pin_test {
@@ -77,48 +138,63 @@ macro_rules! pin_test {
 
             #[test]
             fn can_split_and_set_high() {
-                let expander = setup(&[0]);
+                let transactions = [I2cTrans::write(DEV_ADDR, u16_to_u8_array($value).to_vec())];
+                let expander = new(&transactions);
+
                 {
                     let mut parts = expander.split();
                     parts.$px.set_high().unwrap();
                 }
-                check_sent_data(expander, &u16_to_u8_array($value)[..]);
+                expander.destroy().done();
             }
 
             #[test]
             fn can_split_and_set_low() {
-                let mut expander = setup(&[0]);
+                let transactions = [
+                    I2cTrans::write(DEV_ADDR, vec![0b1111_1111, 0b1111_1111]),
+                    I2cTrans::write(
+                        DEV_ADDR,
+                        u16_to_u8_array(0b1111_1111_1111_1111 & !$value).to_vec(),
+                    ),
+                ];
+                let mut expander = new(&transactions);
                 expander.set(0b1111_1111_1111_1111).unwrap();
                 {
                     let mut parts = expander.split();
                     parts.$px.set_low().unwrap();
                 }
-                let data = 0b1111_1111_1111_1111 & !$value;
-                check_sent_data(expander, &u16_to_u8_array(data)[..]);
+                expander.destroy().done();
             }
 
             #[cfg(feature = "unproven")]
             #[test]
             fn can_split_and_get_is_high() {
-                let input = u16_to_u8_array($value);
-                let expander = setup(&input);
+                let transactions = [
+                    I2cTrans::write(DEV_ADDR, u16_to_u8_array($value).to_vec()),
+                    I2cTrans::read(DEV_ADDR, u16_to_u8_array($value).to_vec()),
+                ];
+                let expander = new(&transactions);
+
                 {
                     let parts = expander.split();
                     assert!(parts.$px.is_high().unwrap());
                 }
-                check_sent_data(expander, &u16_to_u8_array($value)[..]);
+                expander.destroy().done();
             }
 
             #[cfg(feature = "unproven")]
             #[test]
             fn can_split_and_get_is_low() {
-                let input = u16_to_u8_array(!$value);
-                let expander = setup(&input);
+                let transactions = [
+                    I2cTrans::write(DEV_ADDR, u16_to_u8_array($value).to_vec()),
+                    I2cTrans::read(DEV_ADDR, u16_to_u8_array(!$value).to_vec()),
+                ];
+                let expander = new(&transactions);
                 {
                     let parts = expander.split();
                     assert!(parts.$px.is_low().unwrap());
                 }
-                check_sent_data(expander, &u16_to_u8_array($value)[..]);
+                expander.destroy().done();
             }
         }
     };
