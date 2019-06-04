@@ -80,7 +80,7 @@ macro_rules! pin_test {
                 let expander = setup(&[0]);
                 {
                     let mut parts = expander.split();
-                    parts.$px.set_high();
+                    parts.$px.set_high().unwrap();
                 }
                 check_sent_data(expander, &u16_to_u8_array($value)[..]);
             }
@@ -91,7 +91,7 @@ macro_rules! pin_test {
                 expander.set(0b1111_1111_1111_1111).unwrap();
                 {
                     let mut parts = expander.split();
-                    parts.$px.set_low();
+                    parts.$px.set_low().unwrap();
                 }
                 let data = 0b1111_1111_1111_1111 & !$value;
                 check_sent_data(expander, &u16_to_u8_array(data)[..]);
@@ -104,7 +104,7 @@ macro_rules! pin_test {
                 let expander = setup(&input);
                 {
                     let parts = expander.split();
-                    assert!(parts.$px.is_high());
+                    assert!(parts.$px.is_high().unwrap());
                 }
                 check_sent_data(expander, &u16_to_u8_array($value)[..]);
             }
@@ -116,7 +116,7 @@ macro_rules! pin_test {
                 let expander = setup(&input);
                 {
                     let parts = expander.split();
-                    assert!(parts.$px.is_low());
+                    assert!(parts.$px.is_low().unwrap());
                 }
                 check_sent_data(expander, &u16_to_u8_array($value)[..]);
             }

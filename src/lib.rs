@@ -161,8 +161,8 @@
 
 extern crate embedded_hal as hal;
 #[cfg(feature = "unproven")]
-pub use hal::digital::InputPin;
-pub use hal::digital::OutputPin;
+pub use hal::digital::v2::InputPin;
+pub use hal::digital::v2::OutputPin;
 
 /// All possible errors in this crate
 #[derive(Debug)]

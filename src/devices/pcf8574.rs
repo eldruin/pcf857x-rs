@@ -1,6 +1,6 @@
 use core::cell;
 use hal::blocking::i2c::Write;
-pub use hal::digital::OutputPin;
+pub use hal::digital::v2::OutputPin;
 
 use super::super::pins::pcf8574;
 use super::super::{Error, PinFlag, SlaveAddr};

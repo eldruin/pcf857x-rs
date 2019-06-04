@@ -101,7 +101,7 @@ macro_rules! pcf8574_pin_test {
                 let expander = setup(&[0]);
                 {
                     let mut parts = expander.split();
-                    parts.$px.set_high();
+                    parts.$px.set_high().unwrap();
                 }
                 check_sent_data(expander, &[$value]);
             }
@@ -112,7 +112,7 @@ macro_rules! pcf8574_pin_test {
                 expander.set(0b1111_1111).unwrap();
                 {
                     let mut parts = expander.split();
-                    parts.$px.set_low();
+                    parts.$px.set_low().unwrap();
                 }
                 check_sent_data(expander, &[0b1111_1111 & !$value]);
             }
@@ -123,7 +123,7 @@ macro_rules! pcf8574_pin_test {
                 let expander = setup(&[$value]);
                 {
                     let parts = expander.split();
-                    assert!(parts.$px.is_high());
+                    assert!(parts.$px.is_high().unwrap());
                 }
                 check_sent_data(expander, &[$value]);
             }
@@ -134,7 +134,7 @@ macro_rules! pcf8574_pin_test {
                 let expander = setup(&[!$value]);
                 {
                     let parts = expander.split();
-                    assert!(parts.$px.is_low());
+                    assert!(parts.$px.is_low().unwrap());
                 }
                 check_sent_data(expander, &[$value]);
             }
