@@ -124,8 +124,8 @@
 //! let address = SlaveAddr::default();
 //! let expander = Pcf8574::new(dev, address);
 //! let mut parts = expander.split();
-//! parts.p0.set_high();
-//! parts.p7.set_low();
+//! parts.p0.set_high().unwrap();
+//! parts.p7.set_low().unwrap();
 //! # }
 //! ```
 //!
@@ -149,8 +149,8 @@
 //! let mut parts = expander.split();
 //! #[cfg(feature="unproven")]
 //! {
-//!     let is_input_p0_low = parts.p0.is_low();
-//!     let is_input_p2_low = parts.p2.is_low();
+//!     let is_input_p0_low = parts.p0.is_low().unwrap();
+//!     let is_input_p2_low = parts.p2.is_low().unwrap();
 //! }
 //! # }
 //! ```
