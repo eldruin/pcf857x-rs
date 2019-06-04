@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-...
+### Changed
+- [breaking-change] Individual pins now implement
+  `embedded_hal::digital::v2::OutputPin` and `embedded_hal::digital::v2::InputPin`
+  which can return errors in their `set_high()` and similar methods.
+  Previously errors occurred during these operations could not be returned and
+  the driver panicked. Now this driver is free from panics.
 
 ## [0.2.0] - 2018-10-20
 
