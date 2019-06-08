@@ -2,6 +2,7 @@ extern crate embedded_hal_mock as hal;
 use hal::i2c::{Mock as I2cMock, Transaction as I2cTrans};
 extern crate pcf857x;
 use pcf857x::{Error, Pcf8575, PinFlag, SlaveAddr};
+mod base;
 
 const DEV_ADDR: u8 = 0b010_0000;
 
@@ -41,11 +42,7 @@ fn write_empty_array_does_nothing() {
 #[test]
 fn write_array_with_odd_word_count_returns_error() {
     let mut expander = new(&[]);
-
-    match expander.write_array(&[0]) {
-        Err(Error::InvalidInputData) => (),
-        _ => panic!(),
-    };
+    expect_err!(expander.write_array(&[0]), InvalidInputData);
     expander.destroy().done();
 }
 
@@ -55,10 +52,7 @@ fn read_multiple_words_with_odd_size_array_returns_error() {
     let mut expander = new(&[]);
 
     let mask = PinFlag::P0 | PinFlag::P17;
-    match expander.read_array(&mask, &mut data) {
-        Err(Error::InvalidInputData) => (),
-        _ => panic!(),
-    };
+    expect_err!(expander.read_array(&mask, &mut data), InvalidInputData);
     expander.destroy().done();
 }
 

@@ -2,6 +2,7 @@ extern crate embedded_hal_mock as hal;
 use hal::i2c::{Mock as I2cMock, Transaction as I2cTrans};
 extern crate pcf857x;
 use pcf857x::{Error, Pcf8574, Pcf8574a, PinFlag, SlaveAddr};
+mod base;
 
 macro_rules! pcf8574_tests {
     ($device_name:ident, $test_mod_name:ident, $default_address:expr) => {
@@ -85,10 +86,7 @@ macro_rules! pcf8574_tests {
             fn read_wrong_pin_flag_returns_error() {
                 let mut expander = new(&[]);
                 let mask = PinFlag::P0 | PinFlag::P17;
-                match expander.get(&mask) {
-                    Err(Error::InvalidInputData) => (),
-                    _ => panic!(),
-                };
+                expect_err!(expander.get(&mask), InvalidInputData);
                 expander.destroy().done();
             }
 
@@ -121,10 +119,7 @@ macro_rules! pcf8574_tests {
                 let mut data = [0; 2];
                 let mut expander = new(&[]);
                 let mask = PinFlag::P0 | PinFlag::P17;
-                match expander.read_array(&mask, &mut data) {
-                    Err(Error::InvalidInputData) => (),
-                    _ => panic!(),
-                };
+                expect_err!(expander.read_array(&mask, &mut data), InvalidInputData);
                 expander.destroy().done();
             }
             pcf8574_pin_test!(p0, 1, $default_address);
