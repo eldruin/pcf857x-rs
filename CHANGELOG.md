@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   which can return errors in their `set_high()` and similar methods.
   Previously errors occurred during these operations could not be returned and
   the driver panicked. Now this driver is free from panics.
+  See: https://github.com/eldruin/pcf857x-rs/issues/2
 
 ## [0.2.0] - 2018-10-20
 
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added method to split a device into structs representing the individual pins
   implementing the `InputPin` and `OutputPin` traits so that it is possible
   to use them transparently as if they were normal I/O pins.
+  See: https://github.com/eldruin/pcf857x-rs/issues/1
 
 ### Changed
 - [breaking-change] Renamed PCF8574 -> Pcf8574, PCF8574A -> Pcf8574a and
