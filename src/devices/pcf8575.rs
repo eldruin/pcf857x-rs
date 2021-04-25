@@ -2,7 +2,7 @@ use core::cell;
 use embedded_hal::blocking::i2c::{Read, Write};
 pub use embedded_hal::digital::v2::OutputPin;
 
-use crate::pins::pcf8575;
+use crate::split_pins::pcf8575;
 use crate::{Error, PinFlag, SlaveAddr};
 
 /// PCF8575 device driver

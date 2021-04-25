@@ -1,4 +1,4 @@
-use super::super::pins;
+use super::super::split_pins;
 use super::super::{Error, Pcf8574, Pcf8574a, Pcf8575, PinFlag};
 use embedded_hal::blocking::i2c::Write;
 
@@ -11,7 +11,7 @@ macro_rules! pcf8574_set_pin_impl {
             // The methods require only an immutable reference but the actual mutable device
             // is wrapped in a RefCell and will be aquired mutably on execution.
             // Again, this is only internal so users cannot misuse it.
-            impl<I2C, E> pins::SetPin<E> for $device_name<I2C>
+            impl<I2C, E> split_pins::SetPin<E> for $device_name<I2C>
             where
                 I2C: Write<Error = E>
             {
@@ -35,7 +35,7 @@ macro_rules! pcf8574_set_pin_impl {
 
 pcf8574_set_pin_impl!(Pcf8574, Pcf8574a);
 
-impl<I2C, E> pins::SetPin<E> for Pcf8575<I2C>
+impl<I2C, E> split_pins::SetPin<E> for Pcf8575<I2C>
 where
     I2C: Write<Error = E>,
 {

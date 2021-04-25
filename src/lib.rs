@@ -236,8 +236,8 @@ impl SlaveAddr {
     }
 }
 
-mod pins;
-pub use crate::pins::{
+mod split_pins;
+pub use crate::split_pins::{
     pcf8574, pcf8575, P0, P1, P10, P11, P12, P13, P14, P15, P16, P17, P2, P3, P4, P5, P6, P7,
 };
 mod devices;
