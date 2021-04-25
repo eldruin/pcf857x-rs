@@ -1,6 +1,4 @@
-extern crate embedded_hal_mock as hal;
-use hal::i2c::{Mock as I2cMock, Transaction as I2cTrans};
-extern crate pcf857x;
+use embedded_hal_mock::i2c::{Mock as I2cMock, Transaction as I2cTrans};
 use pcf857x::{Error, Pcf8574, Pcf8574a, PinFlag, SlaveAddr};
 mod base;
 

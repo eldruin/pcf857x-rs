@@ -1,9 +1,9 @@
 use core::cell;
-use hal::blocking::i2c::Write;
-pub use hal::digital::v2::OutputPin;
+use embedded_hal::blocking::i2c::{Read, Write};
+pub use embedded_hal::digital::v2::OutputPin;
 
-use super::super::pins::pcf8575;
-use super::super::{Error, PinFlag, SlaveAddr};
+use crate::pins::pcf8575;
+use crate::{Error, PinFlag, SlaveAddr};
 
 /// PCF8575 device driver
 #[derive(Debug, Default)]
@@ -95,7 +95,7 @@ where
 
 impl<I2C, E> Pcf8575<I2C>
 where
-    I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>,
+    I2C: Read<Error = E> + Write<Error = E>,
 {
     /// Get the status of the selected I/O pins.
     /// The mask of the pins to be read can be created with a combination of
@@ -158,8 +158,6 @@ fn u8_array_to_u16(input: [u8; 2]) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    extern crate embedded_hal_mock as hal;
-
     use super::*;
 
     #[test]

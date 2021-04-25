@@ -1,6 +1,6 @@
 use super::super::pins;
 use super::super::{Error, Pcf8574, Pcf8574a, Pcf8575, PinFlag};
-use hal::blocking::i2c::Write;
+use embedded_hal::blocking::i2c::Write;
 
 macro_rules! pcf8574_set_pin_impl {
     ( $( $device_name:ident ),+ ) => {

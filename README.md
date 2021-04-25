@@ -36,10 +36,6 @@ Please find additional examples using hardware in this repository: [driver-examp
 [driver-examples]: https://github.com/eldruin/driver-examples
 
 ```rust
-extern crate embedded_hal;
-extern crate linux_embedded_hal;
-extern crate pcf857x;
-
 use linux_embedded_hal::I2cdev;
 use pcf857x::{Pcf8574, PinFlag, SlaveAddr};
 

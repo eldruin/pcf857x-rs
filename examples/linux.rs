@@ -1,7 +1,3 @@
-extern crate embedded_hal;
-extern crate linux_embedded_hal;
-extern crate pcf857x;
-
 use linux_embedded_hal::I2cdev;
 use pcf857x::{Pcf8574, PinFlag, SlaveAddr};
 

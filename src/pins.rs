@@ -1,7 +1,7 @@
-pub use hal::digital::v2::OutputPin;
+pub use embedded_hal::digital::v2::OutputPin;
 
 #[cfg(feature = "unproven")]
-pub use hal::digital::v2::InputPin;
+pub use embedded_hal::digital::v2::InputPin;
 
 use super::{Error, PinFlag};
 use core::marker::PhantomData;

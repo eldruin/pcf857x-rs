@@ -57,46 +57,32 @@
 //! the device:
 //!
 //! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate pcf857x;
-//!
-//! use hal::I2cdev;
+//! use linux_embedded_hal::I2cdev;
 //! use pcf857x::{ Pcf8574, SlaveAddr };
 //!
-//! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
 //! let mut expander = Pcf8574::new(dev, address);
-//! # }
 //! ```
 //!
 //! ### Providing an alternative address
 //!
 //! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate pcf857x;
-//!
-//! use hal::I2cdev;
+//! use linux_embedded_hal::I2cdev;
 //! use pcf857x::{ Pcf8574, SlaveAddr };
 //!
-//! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let (a2, a1, a0) = (false, false, true);
 //! let address = SlaveAddr::Alternative(a2, a1, a0);
 //! let mut expander = Pcf8574::new(dev, address);
-//! # }
 //! ```
 //!
 //! ### Setting the output pins and reading P0 and P7
 //!
 //! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate pcf857x;
-//!
-//! use hal::I2cdev;
+//! use linux_embedded_hal::I2cdev;
 //! use pcf857x::{ Pcf8574, SlaveAddr, PinFlag };
 //!
-//! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
 //! let mut expander = Pcf8574::new(dev, address);
@@ -107,26 +93,20 @@
 //! let read_input_pin_status = expander.get(&mask_of_pins_to_be_read).unwrap();
 //!
 //! println!("Input pin status: {}", read_input_pin_status);
-//! # }
 //! ```
 //!
 //! ### Splitting device into individual input/output pins and setting them.
 //!
 //! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate pcf857x;
-//!
-//! use hal::I2cdev;
+//! use linux_embedded_hal::I2cdev;
 //! use pcf857x::{ Pcf8574, SlaveAddr, PinFlag, OutputPin };
 //!
-//! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
 //! let expander = Pcf8574::new(dev, address);
 //! let mut parts = expander.split();
 //! parts.p0.set_high().unwrap();
 //! parts.p7.set_low().unwrap();
-//! # }
 //! ```
 //!
 //! ### Splitting device into individual input/output pins and reading them.
@@ -134,15 +114,11 @@
 //! Only available if compiling with the "`unproven`" feature
 //!
 //! ```no_run
-//! extern crate linux_embedded_hal as hal;
-//! extern crate pcf857x;
-//!
-//! use hal::I2cdev;
+//! use linux_embedded_hal::I2cdev;
 //! use pcf857x::{ Pcf8574, SlaveAddr, PinFlag };
 //! #[cfg(feature="unproven")]
 //! use pcf857x::InputPin;
 //!
-//! # fn main() {
 //! let dev = I2cdev::new("/dev/i2c-1").unwrap();
 //! let address = SlaveAddr::default();
 //! let expander = Pcf8574::new(dev, address);
@@ -152,17 +128,15 @@
 //!     let is_input_p0_low = parts.p0.is_low().unwrap();
 //!     let is_input_p2_low = parts.p2.is_low().unwrap();
 //! }
-//! # }
 //! ```
 
 #![deny(unsafe_code)]
 #![deny(missing_docs)]
 #![no_std]
 
-extern crate embedded_hal as hal;
 #[cfg(feature = "unproven")]
-pub use hal::digital::v2::InputPin;
-pub use hal::digital::v2::OutputPin;
+pub use embedded_hal::digital::v2::InputPin;
+pub use embedded_hal::digital::v2::OutputPin;
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -263,12 +237,12 @@ impl SlaveAddr {
 }
 
 mod pins;
-pub use pins::{
+pub use crate::pins::{
     pcf8574, pcf8575, P0, P1, P10, P11, P12, P13, P14, P15, P16, P17, P2, P3, P4, P5, P6, P7,
 };
 mod devices;
-pub use devices::pcf8574::{Pcf8574, Pcf8574a};
-pub use devices::pcf8575::Pcf8575;
+pub use crate::devices::pcf8574::{Pcf8574, Pcf8574a};
+pub use crate::devices::pcf8575::Pcf8575;
 
 #[cfg(test)]
 mod tests {

@@ -1,9 +1,9 @@
 use core::cell;
-use hal::blocking::i2c::Write;
-pub use hal::digital::v2::OutputPin;
+use embedded_hal::blocking::i2c::{Read, Write};
+pub use embedded_hal::digital::v2::OutputPin;
 
-use super::super::pins::pcf8574;
-use super::super::{Error, PinFlag, SlaveAddr};
+use crate::pins::pcf8574;
+use crate::{Error, PinFlag, SlaveAddr};
 
 macro_rules! pcf8574 {
     ( $device_name:ident, $device_data_name:ident, $default_address:expr ) => {
@@ -92,7 +92,7 @@ macro_rules! pcf8574 {
 
         impl<I2C, E> $device_name<I2C>
         where
-            I2C: hal::blocking::i2c::Read<Error = E> + Write<Error = E>,
+            I2C: Read<Error = E> + Write<Error = E>,
         {
             /// Get the status of the selected I/O pins.
             /// The mask of the pins to be read can be created with a combination of
