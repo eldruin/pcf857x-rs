@@ -19,7 +19,7 @@ macro_rules! pcf8574_tests {
                 ];
                 let mut expander = new(&transactions);
                 let mask = PinFlag::P0 | PinFlag::P7;
-                let status = expander.get(&mask).unwrap();
+                let status = expander.get(mask).unwrap();
                 assert_eq!(0x01, status);
                 expander.destroy().done();
             }
@@ -35,7 +35,7 @@ macro_rules! pcf8574_tests {
                 let mut expander = new(&transactions);
                 expander.set(write_status).unwrap();
                 let mask = PinFlag::P0 | PinFlag::P7;
-                let status = expander.get(&mask).unwrap();
+                let status = expander.get(mask).unwrap();
                 assert_eq!(0x01, status);
                 expander.destroy().done();
             }
@@ -49,7 +49,7 @@ macro_rules! pcf8574_tests {
                 let mut expander = new(&transactions);
                 let mut data = [0; 2];
                 let mask = PinFlag::P0 | PinFlag::P7;
-                expander.read_array(&mask, &mut data).unwrap();
+                expander.read_array(mask, &mut data).unwrap();
                 assert_eq!([0xAB, 0xCD], data);
                 expander.destroy().done();
             }
@@ -66,7 +66,7 @@ macro_rules! pcf8574_tests {
                 expander.set(write_status).unwrap();
                 let mut data = [0; 2];
                 let mask = PinFlag::P0 | PinFlag::P7;
-                expander.read_array(&mask, &mut data).unwrap();
+                expander.read_array(mask, &mut data).unwrap();
                 assert_eq!([0xAB, 0xCD], data);
                 expander.destroy().done();
             }
@@ -84,7 +84,7 @@ macro_rules! pcf8574_tests {
             fn read_wrong_pin_flag_returns_error() {
                 let mut expander = new(&[]);
                 let mask = PinFlag::P0 | PinFlag::P17;
-                expect_err!(expander.get(&mask), InvalidInputData);
+                expect_err!(expander.get(mask), InvalidInputData);
                 expander.destroy().done();
             }
 
@@ -108,7 +108,7 @@ macro_rules! pcf8574_tests {
             fn empty_array_read_does_nothing() {
                 let mut expander = new(&[]);
                 let mask = PinFlag::P0 | PinFlag::P7;
-                expander.read_array(&mask, &mut []).unwrap();
+                expander.read_array(mask, &mut []).unwrap();
                 expander.destroy().done();
             }
 
@@ -117,7 +117,7 @@ macro_rules! pcf8574_tests {
                 let mut data = [0; 2];
                 let mut expander = new(&[]);
                 let mask = PinFlag::P0 | PinFlag::P17;
-                expect_err!(expander.read_array(&mask, &mut data), InvalidInputData);
+                expect_err!(expander.read_array(mask, &mut data), InvalidInputData);
                 expander.destroy().done();
             }
             pcf8574_pin_test!(p0, 1, $default_address);

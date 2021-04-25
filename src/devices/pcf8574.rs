@@ -97,7 +97,7 @@ macro_rules! pcf8574 {
             /// Get the status of the selected I/O pins.
             /// The mask of the pins to be read can be created with a combination of
             /// `PinFlag::P0` to `PinFlag::P7`.
-            pub fn get(&mut self, mask: &PinFlag) -> Result<u8, Error<E>> {
+            pub fn get(&mut self, mask: PinFlag) -> Result<u8, Error<E>> {
                 if (mask.mask >> 8) != 0 {
                     return Err(Error::InvalidInputData);
                 }
@@ -106,7 +106,7 @@ macro_rules! pcf8574 {
 
             pub(crate) fn _get(
                 mut dev: cell::RefMut<$device_data_name<I2C>>,
-                mask: &PinFlag,
+                mask: PinFlag,
             ) -> Result<u8, Error<E>> {
                 let mask = mask.mask as u8 | dev.last_set_mask;
                 let address = dev.address;
@@ -126,7 +126,7 @@ macro_rules! pcf8574 {
             /// `PinFlag::P0` to `PinFlag::P7`.
             pub fn read_array(
                 &mut self,
-                mask: &PinFlag,
+                mask: PinFlag,
                 mut data: &mut [u8],
             ) -> Result<(), Error<E>> {
                 if !data.is_empty() {

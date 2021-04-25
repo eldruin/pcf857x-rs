@@ -50,7 +50,7 @@ fn read_multiple_words_with_odd_size_array_returns_error() {
     let mut expander = new(&[]);
 
     let mask = PinFlag::P0 | PinFlag::P17;
-    expect_err!(expander.read_array(&mask, &mut data), InvalidInputData);
+    expect_err!(expander.read_array(mask, &mut data), InvalidInputData);
     expander.destroy().done();
 }
 
@@ -62,7 +62,7 @@ fn can_read_pins() {
     ];
     let mut expander = new(&transactions);
     let mask = PinFlag::P0 | PinFlag::P17;
-    let status = expander.get(&mask).unwrap();
+    let status = expander.get(mask).unwrap();
     assert_eq!(0x8000, status);
     expander.destroy().done();
 }
@@ -81,7 +81,7 @@ fn read_conserves_output_high_pins() {
     let mut expander = new(&transactions);
     expander.set(write_status).unwrap();
     let mask = PinFlag::P0 | PinFlag::P17;
-    let status = expander.get(&mask).unwrap();
+    let status = expander.get(mask).unwrap();
     assert_eq!(0x8000, status);
     expander.destroy().done();
 }
@@ -95,7 +95,7 @@ fn can_read_multiple_words() {
     let mut expander = new(&transactions);
     let mask = PinFlag::P0 | PinFlag::P17;
     let mut data = [0; 2];
-    expander.read_array(&mask, &mut data).unwrap();
+    expander.read_array(mask, &mut data).unwrap();
     assert_eq!([0xAB, 0xCD], data);
     expander.destroy().done();
 }
@@ -115,7 +115,7 @@ fn reading_multiple_words_conserves_high_pins() {
     expander.set(write_status).unwrap();
     let mask = PinFlag::P0 | PinFlag::P17;
     let mut data = [0; 2];
-    expander.read_array(&mask, &mut data).unwrap();
+    expander.read_array(mask, &mut data).unwrap();
     assert_eq!([0xAB, 0xCD], data);
     expander.destroy().done();
 }

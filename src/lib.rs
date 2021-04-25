@@ -90,7 +90,7 @@
 //! expander.set(output_pin_status).unwrap();
 //!
 //! let mask_of_pins_to_be_read = PinFlag::P0 | PinFlag::P7;
-//! let read_input_pin_status = expander.get(&mask_of_pins_to_be_read).unwrap();
+//! let read_input_pin_status = expander.get(mask_of_pins_to_be_read).unwrap();
 //!
 //! println!("Input pin status: {}", read_input_pin_status);
 //! ```

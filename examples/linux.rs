@@ -9,7 +9,7 @@ fn main() {
     expander.set(output_pin_status).unwrap();
 
     let pins_to_be_read = PinFlag::P0 | PinFlag::P7;
-    let input_status = expander.get(&pins_to_be_read).unwrap();
+    let input_status = expander.get(pins_to_be_read).unwrap();
 
     println!("Input pin status: {}", input_status);
 }

@@ -100,13 +100,13 @@ where
     /// Get the status of the selected I/O pins.
     /// The mask of the pins to be read can be created with a combination of
     /// `PinFlag::P0` to `PinFlag::P17`.
-    pub fn get(&mut self, mask: &PinFlag) -> Result<u16, Error<E>> {
+    pub fn get(&mut self, mask: PinFlag) -> Result<u16, Error<E>> {
         self.do_on_acquired(|dev| Self::_get(dev, mask))
     }
 
     pub(crate) fn _get(
         mut dev: cell::RefMut<Pcf8575Data<I2C>>,
-        mask: &PinFlag,
+        mask: PinFlag,
     ) -> Result<u16, Error<E>> {
         let address = dev.address;
         let mask = mask.mask | dev.last_set_mask;
@@ -128,7 +128,7 @@ where
     /// `PinFlag::P0` to `PinFlag::P17`.
     /// The even elements correspond to the status of P0-P7 and the odd ones P10-P17.
     /// The number of elements in the data must be even.
-    pub fn read_array(&mut self, mask: &PinFlag, mut data: &mut [u8]) -> Result<(), Error<E>> {
+    pub fn read_array(&mut self, mask: PinFlag, mut data: &mut [u8]) -> Result<(), Error<E>> {
         if !data.is_empty() {
             if data.len() % 2 != 0 {
                 return Err(Error::InvalidInputData);

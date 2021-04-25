@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - `SlaveAddr` and `PinFlag` types now implement the traits `Clone`, `Copy` and `PartialEq`.
 
+### Changed
+- [breaking-change] Accept pin mask in `read_array()` and `get()` methods by value instead of by reference.
+
 ## [0.3.0] - 2019-06-08
 
 ### Changed
