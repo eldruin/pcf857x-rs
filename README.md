@@ -2,7 +2,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/pcf857x.svg)](https://crates.io/crates/pcf857x)
 [![Docs](https://docs.rs/pcf857x/badge.svg)](https://docs.rs/pcf857x)
-[![Build Status](https://travis-ci.org/eldruin/pcf857x-rs.svg?branch=master)](https://travis-ci.org/eldruin/pcf857x-rs)
+[![Build Status](https://github.com/eldruin/pcf857x-rs/workflows/Build/badge.svg)](https://github.com/eldruin/pcf857x-rs/actions?query=workflow%3ABuild)
 [![Coverage Status](https://coveralls.io/repos/github/eldruin/pcf857x-rs/badge.svg?branch=master)](https://coveralls.io/github/eldruin/pcf857x-rs?branch=master)
 ![Maintenance Intention](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
 
