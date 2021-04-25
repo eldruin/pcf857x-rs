@@ -4,7 +4,6 @@
 [![Docs](https://docs.rs/pcf857x/badge.svg)](https://docs.rs/pcf857x)
 [![Build Status](https://github.com/eldruin/pcf857x-rs/workflows/Build/badge.svg)](https://github.com/eldruin/pcf857x-rs/actions?query=workflow%3ABuild)
 [![Coverage Status](https://coveralls.io/repos/github/eldruin/pcf857x-rs/badge.svg?branch=master)](https://coveralls.io/github/eldruin/pcf857x-rs?branch=master)
-![Maintenance Intention](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
 
 This is a platform agnostic Rust driver for the PCF8574, PCF8574A and PCF8575 I2C I/O expanders,
 based on the [`embedded-hal`] traits.
