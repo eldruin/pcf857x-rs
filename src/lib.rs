@@ -148,6 +148,7 @@ pub enum Error<E> {
     /// Could not acquire device. Maybe it is already acquired.
     CouldNotAcquireDevice,
 }
+
 mod slave_addr;
 pub use crate::slave_addr::SlaveAddr;
 mod pin_flag;

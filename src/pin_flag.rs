@@ -7,7 +7,7 @@
 /// let pins_to_be_read = PinFlag::P0 | PinFlag::P1;
 /// ```
 /// Note that P10-17 can only be used with PCF8575 devices.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PinFlag {
     pub(crate) mask: u16,
 }

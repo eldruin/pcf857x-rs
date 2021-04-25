@@ -1,7 +1,7 @@
 //! Slave address definition
 
 /// Possible slave addresses
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SlaveAddr {
     /// Default slave address
     Default,

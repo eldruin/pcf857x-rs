@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-...
+### Added
+- `SlaveAddr` and `PinFlag` types now implement the traits `Clone`, `Copy` and `PartialEq`.
 
 ## [0.3.0] - 2019-06-08
 
