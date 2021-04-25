@@ -10,7 +10,7 @@ macro_rules! pcf8574_tests {
             use super::*;
 
             pub fn new(transactions: &[I2cTrans]) -> $device_name<I2cMock> {
-                $device_name::new(I2cMock::new(&transactions), SlaveAddr::default())
+                $device_name::new(I2cMock::new(transactions), SlaveAddr::default())
             }
 
             #[test]

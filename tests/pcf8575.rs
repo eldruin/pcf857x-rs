@@ -7,7 +7,7 @@ mod base;
 const DEV_ADDR: u8 = 0b010_0000;
 
 pub fn new(transactions: &[I2cTrans]) -> Pcf8575<I2cMock> {
-    Pcf8575::new(I2cMock::new(&transactions), SlaveAddr::default())
+    Pcf8575::new(I2cMock::new(transactions), SlaveAddr::default())
 }
 
 fn u16_to_u8_array(input: u16) -> [u8; 2] {
