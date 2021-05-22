@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+...
+
+## [0.4.0] - 2021-05-22
+
 ### Added
 - `SlaveAddr` and `PinFlag` types now implement the traits `Clone`, `Copy` and `PartialEq`.
 
@@ -41,6 +45,7 @@ This is the initial release to crates.io of the feature-complete driver. There
 may be some API changes in the future. All changes will be documented in this
 CHANGELOG.
 
-[Unreleased]: https://github.com/eldruin/pcf857x-rs/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/eldruin/pcf857x-rs/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/eldruin/pcf857x-rs/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/eldruin/pcf857x-rs/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/eldruin/pcf857x-rs/compare/v0.1.0...v0.2.0
