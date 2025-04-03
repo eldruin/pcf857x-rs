@@ -134,9 +134,8 @@
 #![deny(missing_docs)]
 #![no_std]
 
-#[cfg(feature = "unproven")]
-pub use embedded_hal::digital::v2::InputPin;
-pub use embedded_hal::digital::v2::OutputPin;
+pub use embedded_hal::digital::InputPin;
+pub use embedded_hal::digital::OutputPin;
 
 /// All possible errors in this crate
 #[derive(Debug)]
@@ -147,6 +146,12 @@ pub enum Error<E> {
     InvalidInputData,
     /// Could not acquire device. Maybe it is already acquired.
     CouldNotAcquireDevice,
+}
+
+impl<E: core::fmt::Debug> embedded_hal::digital::Error for Error<E> {
+    fn kind(&self) -> embedded_hal::digital::ErrorKind {
+        embedded_hal::digital::ErrorKind::Other
+    }
 }
 
 mod slave_addr;

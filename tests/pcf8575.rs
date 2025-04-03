@@ -1,4 +1,4 @@
-use embedded_hal_mock::i2c::{Mock as I2cMock, Transaction as I2cTrans};
+use embedded_hal_mock::eh1::i2c::{Mock as I2cMock, Transaction as I2cTrans};
 use pcf857x::{Error, Pcf8575, PinFlag, SlaveAddr};
 mod base;
 
@@ -124,7 +124,7 @@ macro_rules! pin_test {
     ($px:ident, $value:expr) => {
         mod $px {
             use super::*;
-            #[cfg(feature = "unproven")]
+            
             use pcf857x::InputPin;
             use pcf857x::OutputPin;
 
@@ -158,7 +158,6 @@ macro_rules! pin_test {
                 expander.destroy().done();
             }
 
-            #[cfg(feature = "unproven")]
             #[test]
             fn can_split_and_get_is_high() {
                 let transactions = [
@@ -168,13 +167,12 @@ macro_rules! pin_test {
                 let expander = new(&transactions);
 
                 {
-                    let parts = expander.split();
+                    let mut parts = expander.split();
                     assert!(parts.$px.is_high().unwrap());
                 }
                 expander.destroy().done();
             }
 
-            #[cfg(feature = "unproven")]
             #[test]
             fn can_split_and_get_is_low() {
                 let transactions = [
@@ -183,7 +181,7 @@ macro_rules! pin_test {
                 ];
                 let expander = new(&transactions);
                 {
-                    let parts = expander.split();
+                    let mut parts = expander.split();
                     assert!(parts.$px.is_low().unwrap());
                 }
                 expander.destroy().done();

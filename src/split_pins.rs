@@ -1,7 +1,6 @@
-pub use embedded_hal::digital::v2::OutputPin;
+pub use embedded_hal::digital::OutputPin;
 
-#[cfg(feature = "unproven")]
-pub use embedded_hal::digital::v2::InputPin;
+pub use embedded_hal::digital::InputPin;
 
 use super::{Error, PinFlag};
 use core::marker::PhantomData;
@@ -55,7 +54,7 @@ pub mod pcf8575 {
 }
 
 /// Set a pin high or low
-pub trait SetPin<E> {
+pub trait SetPin<E: core::fmt::Debug> {
     /// Set a pin high
     fn set_pin_high(&self, pin_flag: PinFlag) -> Result<(), Error<E>>;
     /// Set a pin low
@@ -63,7 +62,7 @@ pub trait SetPin<E> {
 }
 
 /// Read if a pin is high or low
-pub trait GetPin<E> {
+pub trait GetPin<E: core::fmt::Debug> {
     /// Reads a pin and returns whether it is high
     fn is_pin_high(&self, pin_flag: PinFlag) -> Result<bool, Error<E>>;
     /// Reads a pin and returns whether it is low
@@ -73,10 +72,13 @@ pub trait GetPin<E> {
 macro_rules! io_pin_impl {
     ( $( $PX:ident ),+ ) => {
         $(
-            impl<'a, S, E> OutputPin for $PX<'a, S, E>
-            where S: SetPin<E> {
+            impl<'a, S, E: core::fmt::Debug> embedded_hal::digital::ErrorType for $PX<'a, S, E> {
                 type Error = Error<E>;
+            }
 
+            impl<'a, S, E: core::fmt::Debug> OutputPin for $PX<'a, S, E>
+            where S: SetPin<E> {
+                
                 fn set_high(&mut self) -> Result<(), Self::Error> {
                     self.0.set_pin_high(PinFlag::$PX)
                 }
@@ -86,16 +88,15 @@ macro_rules! io_pin_impl {
                 }
             }
 
-            #[cfg(feature = "unproven")]
-            impl<'a, S, E> InputPin for $PX<'a, S, E>
+            
+            impl<'a, S, E: core::fmt::Debug> InputPin for $PX<'a, S, E>
             where S: GetPin<E> {
-                type Error = Error<E>;
-
-                fn is_high(&self) -> Result<bool, Self::Error> {
+                
+                fn is_high(&mut self) -> Result<bool, Self::Error> {
                     self.0.is_pin_high(PinFlag::$PX)
                 }
 
-                fn is_low(&self) -> Result<bool, Self::Error> {
+                fn is_low(&mut self) -> Result<bool, Self::Error> {
                     self.0.is_pin_low(PinFlag::$PX)
                 }
             }

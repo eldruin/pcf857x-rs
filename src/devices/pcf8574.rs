@@ -1,5 +1,5 @@
 use core::cell;
-use embedded_hal::blocking::i2c::{Read, Write};
+use embedded_hal::i2c::I2c;
 
 use crate::split_pins::pcf8574;
 use crate::{Error, PinFlag, SlaveAddr};
@@ -25,7 +25,7 @@ macro_rules! pcf8574 {
 
         impl<I2C, E> $device_name<I2C>
         where
-            I2C: Write<Error = E>,
+            I2C: I2c<Error = E>,
         {
             /// Create new instance of the device
             pub fn new(i2c: I2C, address: SlaveAddr) -> Self {
@@ -91,7 +91,7 @@ macro_rules! pcf8574 {
 
         impl<I2C, E> $device_name<I2C>
         where
-            I2C: Read<Error = E> + Write<Error = E>,
+            I2C: I2c<Error = E>,
         {
             /// Get the status of the selected I/O pins.
             /// The mask of the pins to be read can be created with a combination of
