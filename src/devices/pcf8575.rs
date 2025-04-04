@@ -1,6 +1,5 @@
 use core::cell;
 use embedded_hal::blocking::i2c::{Read, Write};
-pub use embedded_hal::digital::v2::OutputPin;
 
 use crate::split_pins::pcf8575;
 use crate::{Error, PinFlag, SlaveAddr};
@@ -67,7 +66,7 @@ where
             }
             self.do_on_acquired(|mut dev| {
                 let address = dev.address;
-                dev.i2c.write(address, &data).map_err(Error::I2C)?;
+                dev.i2c.write(address, data).map_err(Error::I2C)?;
                 dev.last_set_mask =
                     (u16::from(data[data.len() - 1]) << 8) | u16::from(data[data.len() - 2]);
                 Ok(())
@@ -77,8 +76,8 @@ where
     }
 
     /// Split device into individual pins
-    pub fn split<'a>(&'a self) -> pcf8575::Parts<'a, Pcf8575<I2C>, E> {
-        pcf8575::Parts::new(&self)
+    pub fn split(&self) -> pcf8575::Parts<'_, Pcf8575<I2C>, E> {
+        pcf8575::Parts::new(self)
     }
 
     pub(crate) fn do_on_acquired<R>(
@@ -128,7 +127,7 @@ where
     /// `PinFlag::P0` to `PinFlag::P17`.
     /// The even elements correspond to the status of P0-P7 and the odd ones P10-P17.
     /// The number of elements in the data must be even.
-    pub fn read_array(&mut self, mask: PinFlag, mut data: &mut [u8]) -> Result<(), Error<E>> {
+    pub fn read_array(&mut self, mask: PinFlag, data: &mut [u8]) -> Result<(), Error<E>> {
         if !data.is_empty() {
             if data.len() % 2 != 0 {
                 return Err(Error::InvalidInputData);
@@ -141,7 +140,7 @@ where
                     .write(address, &u16_to_u8_array(mask))
                     .map_err(Error::I2C)?;
 
-                dev.i2c.read(address, &mut data).map_err(Error::I2C)
+                dev.i2c.read(address, data).map_err(Error::I2C)
             })?;
         }
         Ok(())

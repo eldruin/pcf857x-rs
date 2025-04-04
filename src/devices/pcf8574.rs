@@ -1,6 +1,5 @@
 use core::cell;
 use embedded_hal::blocking::i2c::{Read, Write};
-pub use embedded_hal::digital::v2::OutputPin;
 
 use crate::split_pins::pcf8574;
 use crate::{Error, PinFlag, SlaveAddr};
@@ -85,7 +84,7 @@ macro_rules! pcf8574 {
             }
 
             /// Split device into individual pins
-            pub fn split<'a>(&'a self) -> pcf8574::Parts<'a, $device_name<I2C>, E> {
+            pub fn split(&self) -> pcf8574::Parts<'_, $device_name<I2C>, E> {
                 pcf8574::Parts::new(&self)
             }
         }
