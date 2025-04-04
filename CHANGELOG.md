@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-...
-
-## [0.5.0] - 2025-04-03
-
 ### Changed
 - Updated `embedded-hal` 0.2.5 -> 1.0.0
 - Updated `linux-embedded-hal` 0.3 -> 0.4.0
@@ -52,8 +48,7 @@ This is the initial release to crates.io of the feature-complete driver. There
 may be some API changes in the future. All changes will be documented in this
 CHANGELOG.
 
-[Unreleased]: https://github.com/eldruin/pcf857x-rs/compare/v0.5.0...HEAD
-[0.5.0]: https://github.com/eldruin/pcf857x-rs/compare/v0.4.0...v0.5.0
+[Unreleased]: https://github.com/eldruin/pcf857x-rs/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/eldruin/pcf857x-rs/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/eldruin/pcf857x-rs/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/eldruin/pcf857x-rs/compare/v0.1.0...v0.2.0
