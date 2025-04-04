@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-...
+### Changed
+- Updated `embedded-hal` 0.2.5 -> 1.0.0
+- Updated `linux-embedded-hal` 0.3 -> 0.4.0
+- Updated `embedded-hal-mock` 0.7 -> 0.11.1
 
 ## [0.4.0] - 2021-05-22
 
