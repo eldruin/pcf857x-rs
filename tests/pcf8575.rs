@@ -124,7 +124,7 @@ macro_rules! pin_test {
     ($px:ident, $value:expr) => {
         mod $px {
             use super::*;
-            
+
             use pcf857x::InputPin;
             use pcf857x::OutputPin;
 

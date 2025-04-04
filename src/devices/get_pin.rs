@@ -39,7 +39,7 @@ pcf8574_get_pin_impl!(Pcf8574, Pcf8574a);
 impl<I2C, E> split_pins::GetPin<E> for Pcf8575<I2C>
 where
     I2C: I2c<Error = E>,
-    E: core::fmt::Debug
+    E: core::fmt::Debug,
 {
     fn is_pin_high(&self, pin_flag: PinFlag) -> Result<bool, Error<E>> {
         self.do_on_acquired(|dev| {

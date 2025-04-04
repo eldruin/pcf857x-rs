@@ -78,7 +78,7 @@ macro_rules! io_pin_impl {
 
             impl<'a, S, E: core::fmt::Debug> OutputPin for $PX<'a, S, E>
             where S: SetPin<E> {
-                
+
                 fn set_high(&mut self) -> Result<(), Self::Error> {
                     self.0.set_pin_high(PinFlag::$PX)
                 }
@@ -88,10 +88,10 @@ macro_rules! io_pin_impl {
                 }
             }
 
-            
+
             impl<'a, S, E: core::fmt::Debug> InputPin for $PX<'a, S, E>
             where S: GetPin<E> {
-                
+
                 fn is_high(&mut self) -> Result<bool, Self::Error> {
                     self.0.is_pin_high(PinFlag::$PX)
                 }
